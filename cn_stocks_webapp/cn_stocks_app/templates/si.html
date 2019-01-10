@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<title>World Bank Data Dashboard</title>
+
+<!--import script files needed from plotly and bootstrap-->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT" crossorigin="anonymous"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+</head>
+
+<body>
+
+<!--navbar links-->     
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+   <a class="navbar-brand" href="#">恒明数据</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" 
+  data-target="#navbarTogglerDemo02" 
+  aria-controls="navbarTogglerDemo02" aria-expanded="false" 
+  aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+    <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+      <li class="nav-item">
+        <a class="nav-link" href="">恒明分析</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="">恒明阅读</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!--middle section-->       
+<div class="row">
+
+    <!--social media buttons column-->      
+    <div class="col-1">
+        <div id="follow-me" class="mt-3">
+           
+        </div>
+    </div>
+
+    <!--visualizations column-->        
+    <div class="col-11">
+
+        <!--chart descriptions-->       
+        <div id="middle-info" class="mt-3">
+
+            <h2 id="tag-line">涨停板</h2>
+            <h4 id="tag-line" class="text-muted">每日更新</h4>
+            
+        </div>
+        
+        <!--charts-->       
+        <div id="charts" class="container mt-3 text-center">
+                    
+            <!--top two charts-->       
+            <div class="row">
+                <div class="col-12">
+                <table id='break-table' class="table" data-row-style="rowStyle">
+                <thead>
+                <tr>
+                <th scope="col"  data-field="date">日期</th>
+                <th scope="col"  data-field="industry">板块</th>
+                <th scope="col"  data-field="number">涨停股数</th>
+                <th scope="col"  data-field="member">涨停股</th>
+                </tr>
+                </thead>
+                </table>
+                </div>
+            </div>
+              
+                
+        </div>
+    </div>
+
+
+<!--footer section-->               
+<div id="footer" class="container"></div>
+
+</body>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.css">
+<script type="text/javascript">
+        // plots the figure with id
+        // id much match the div id above in the html
+       
+        var rds = {{rds | safe}};
+        var $table = $('#break-table');
+        var mydata = []
+        for(var i in rds){
+            console.log(rds[i])
+            mydata.push(rds[i]);
+        }
+
+        $(function () {
+        $('#break-table').bootstrapTable({
+        data: mydata,
+        sortName:'date',
+        sortOrder:'desc'
+        });
+        });
+
+        function rowStyle(row, index) {
+            if((index/3)>=1)
+                {return {classes: 'table-warning'};}
+            else
+                {return {classes: 'table-success'};} 
+            
+            return {};
+        }
+
+
+</script>
+    
+
+</html>
