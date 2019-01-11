@@ -32,7 +32,7 @@ all_stocks_list = all_stocks.index.tolist()
 
 all_stocks.reset_index().to_sql('all_stocks',conn,if_exists='replace',index=False)
 all_stocks_dict = {code:all_stocks.loc[code]['name'] for code in all_stocks.index.tolist()}
-today = (datetime.datetime.today()-timedelta(days=2)).strftime("%Y-%m-%d")
+today = (datetime.datetime.today()-timedelta(days=1)).strftime("%Y-%m-%d")
 ten_years_before = (datetime.datetime.today() - timedelta(days=3650)).strftime("%Y-%m-%d")
 
 widgets = [Bar('>'), ' ', ETA(), ' ', ReverseBar('<')]
