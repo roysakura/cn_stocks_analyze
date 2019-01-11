@@ -26,8 +26,7 @@ today_all_real  = ts.get_today_all()
 try:
 	today_all = pd.read_sql('SELECT * from today_all',conn).drop(['date'],axis=1)
 except:
-	today_all = today_all_real
-	#today_all.reset_index().to_sql('today_all',conn,if_exists='replace',index=False)
+	today_all_real.reset_index().to_sql('today_all',conn,if_exists='replace',index=False)
 
 if not today_all_real.equals(today_all):
 	print('NOT EQUALS')
@@ -48,7 +47,7 @@ pbar = ProgressBar(widgets=widgets,maxval=len(all_stocks_dict.keys())).start()
 
 for i,code in enumerate(all_stocks_dict.keys()):
 	try:
-		current_stock = pd.read_sql('SELECT * from \'{}\''.format(code),conn)
+		current_stock = pd.read_sql('SELECT * from cnstock.{}'.format(code),conn)
 		stock = today_all.loc[code][['open','high','trade','low','volume','changepercent']]
 
 		df_stock = pd.DataFrame([stock])
@@ -56,7 +55,7 @@ for i,code in enumerate(all_stocks_dict.keys()):
 		df_stock['volume'] = df_stock['volume']/100.0
 		df_stock.columns = ['open','high','close','low','volume','p_change','date']
 
-		df_combine = pd.concat([current_stock.sort_values('date'),df_stock],sort=True)
+		df_combine = pd.concat([current_stock.sort_values('date'),df_stock])
 		df_combine['ma5'] = df_combine['ma5'].fillna(df_combine['close'].rolling(5).mean())
 		df_combine['max5'] = df_combine['close'].rolling(5).max()
 		df_combine['min5'] = df_combine['close'].rolling(5).min()
@@ -104,7 +103,7 @@ trade_date = cal[cal.is_open==1]['cal_date']
 
 for i,code in enumerate(all_stocks_dict.keys()):
 	try:
-		current_stock = pd.read_sql('SELECT * from \'{}\''.format(code),conn)
+		current_stock = pd.read_sql('SELECT * from cnstock.{}'.format(code),conn)
 		current_stock['date'] = pd.to_datetime(current_stock['date'])
 	except:
 		continue
@@ -125,10 +124,10 @@ for i,code in enumerate(all_stocks_dict.keys()):
 
 	pbar.update(i + 1)
 
-st60_df = pd.concat(stocks_60,sort=True)
+st60_df = pd.concat(stocks_60)
 st60_df.to_sql('stocks_60_days',conn,if_exists='replace',index=False)
 
-st125_df = pd.concat(stocks_125,sort=True)
+st125_df = pd.concat(stocks_125)
 st125_df.to_sql('stocks_125_days',conn,if_exists='replace',index=False)
 
 pbar.finish()
