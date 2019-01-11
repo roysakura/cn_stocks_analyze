@@ -21,16 +21,16 @@ conn = create_engine(URL(**settings.DATABASE))
 all_stocks = ts.get_stock_basics()
 all_stocks_list = all_stocks.index.tolist()
 
-connection = conn.raw_connection()
-try:
-	cursor = connection.cursor()
-	cursor.execute("delete from all_stocks;")
-	cursor.execute("alter table all_stocks convert to character set utf8;")
-	cursor.close()
-finally:
-	connection.close()
+#connection = conn.raw_connection()
+#try:
+#	cursor = connection.cursor()
+#	cursor.execute("delete from all_stocks;")
+#	cursor.execute("alter table all_stocks convert to character set utf8;")
+#	cursor.close()
+#finally:
+#	connection.close()
 
-all_stocks.reset_index().to_sql('all_stocks',conn,if_exists='append',index=False)
+all_stocks.reset_index().to_sql('all_stocks',conn,if_exists='replace',index=False)
 all_stocks_dict = {code:all_stocks.loc[code]['name'] for code in all_stocks.index.tolist()}
 today = (datetime.datetime.today()-timedelta(days=2)).strftime("%Y-%m-%d")
 ten_years_before = (datetime.datetime.today() - timedelta(days=3650)).strftime("%Y-%m-%d")
