@@ -13,8 +13,8 @@ from sqlalchemy.engine.url import URL
 
 
 # connect to the database
-conn = create_engine(URL(**settings.DATABASE))
-
+#conn = create_engine(URL(**settings.DATABASE))
+conn = sqlite3.connect('cn_stocks.db')
 
 #engine = create_engine('mysql+pymysql://stock:494904@120.79.35.86:3306/stocks?charset=utf8')
 

@@ -7,13 +7,14 @@ import datetime
 from datetime import timedelta
 from progressbar import ProgressBar,SimpleProgress,Bar,ETA,ReverseBar
 import settings
+import sqlite3
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
 
 
 # connect to the database
-conn = create_engine(URL(**settings.DATABASE))
-
+#conn = create_engine(URL(**settings.DATABASE))
+conn = sqlite3.connect('cn_stocks.db')
 
 ts.set_token('3c9fcd3daa9244ca0c45a7e47d5ba14004c9aff7208506910b991f30')
 pro = ts.pro_api()
@@ -48,7 +49,7 @@ pbar = ProgressBar(widgets=widgets,maxval=len(all_stocks_dict.keys())).start()
 
 for i,code in enumerate(all_stocks_dict.keys()):
 	try:
-		current_stock = pd.read_sql('SELECT * from cnstock.{}'.format(code),conn)
+		current_stock = pd.read_sql('SELECT * from \'{}\''.format(code),conn)
 		stock = today_all.loc[code][['open','high','trade','low','volume','changepercent']]
 
 		df_stock = pd.DataFrame([stock])
@@ -104,7 +105,7 @@ trade_date = cal[cal.is_open==1]['cal_date']
 
 for i,code in enumerate(all_stocks_dict.keys()):
 	try:
-		current_stock = pd.read_sql('SELECT * from cnstock.{}'.format(code),conn)
+		current_stock = pd.read_sql('SELECT * from \'{}\''.format(code),conn)
 		current_stock['date'] = pd.to_datetime(current_stock['date'])
 	except:
 		continue
