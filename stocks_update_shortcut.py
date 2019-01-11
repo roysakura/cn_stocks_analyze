@@ -26,6 +26,7 @@ today_all_real  = ts.get_today_all()
 try:
 	today_all = pd.read_sql('SELECT * from today_all',conn).drop(['date'],axis=1)
 except:
+	today_all = today_all_real
 	today_all_real.reset_index().to_sql('today_all',conn,if_exists='replace',index=False)
 
 if not today_all_real.equals(today_all):
