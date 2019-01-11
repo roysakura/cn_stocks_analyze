@@ -6,12 +6,18 @@ import pandas as pd
 import datetime
 from datetime import timedelta
 from progressbar import ProgressBar,SimpleProgress,Bar,ETA,ReverseBar
-import sqlite3
+import settings
+from sqlalchemy import create_engine
+from sqlalchemy.engine.url import URL
+
+
+# connect to the database
+conn = create_engine(URL(**settings.DATABASE))
 
 
 ts.set_token('3c9fcd3daa9244ca0c45a7e47d5ba14004c9aff7208506910b991f30')
 pro = ts.pro_api()
-conn = sqlite3.connect('cn_stocks.db')
+#conn = sqlite3.connect('cn_stocks.db')
 #engine = create_engine('mysql+pymysql://stock:494904@120.79.35.86:3306/stocks?charset=utf8')
 
 today = (datetime.datetime.today()).strftime("%Y-%m-%d")
