@@ -7,15 +7,30 @@ import datetime
 from datetime import timedelta
 from progressbar import ProgressBar,SimpleProgress,Bar,ETA,ReverseBar
 import sqlite3
+import settings
+from sqlalchemy import create_engine
+from sqlalchemy.engine.url import URL
 
 
 # connect to the database
-conn = sqlite3.connect('cn_stocks.db')
+conn = create_engine(URL(**settings.DATABASE))
+
+
 #engine = create_engine('mysql+pymysql://stock:494904@120.79.35.86:3306/stocks?charset=utf8')
 
 all_stocks = ts.get_stock_basics()
 all_stocks_list = all_stocks.index.tolist()
-all_stocks.reset_index().to_sql('all_stocks',conn,if_exists='replace',index=False)
+
+connection = conn.raw_connection()
+try:
+	cursor = connection.cursor()
+	cursor.execute("delete from all_stocks;")
+	cursor.execute("alter table all_stocks convert to character set utf8;")
+	cursor.close()
+finally:
+	connection.close()
+
+all_stocks.reset_index().to_sql('all_stocks',conn,if_exists='append',index=False)
 all_stocks_dict = {code:all_stocks.loc[code]['name'] for code in all_stocks.index.tolist()}
 today = (datetime.datetime.today()-timedelta(days=2)).strftime("%Y-%m-%d")
 ten_years_before = (datetime.datetime.today() - timedelta(days=3650)).strftime("%Y-%m-%d")
