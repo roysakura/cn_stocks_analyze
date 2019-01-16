@@ -104,7 +104,8 @@ def update_data_base():
 			stocks_125[code]= current_stock.loc[mask_125]
 
 			df_combine.to_sql(code,conn,if_exists='replace',index=False)
-		except:
+		except Exception as e:
+			print(e)
 			continue
 
 		pbar.update(i + 1)
