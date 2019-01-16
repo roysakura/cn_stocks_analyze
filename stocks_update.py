@@ -50,6 +50,7 @@ def update_data_base():
 	today_all  = ts.get_today_all()
 	today_all['date'] = today_str
 	today_all.reset_index().to_sql('today_all',conn,if_exists='replace',index=False)
+	today_all = today_all.set_index('code')
 
 	all_stocks = ts.get_stock_basics()
 	all_stocks.reset_index().to_sql('all_stocks',conn,if_exists='replace',index=False)
