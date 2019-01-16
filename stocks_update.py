@@ -56,7 +56,7 @@ def update_data_base():
 	all_stocks_list = all_stocks.index.tolist()
 
 	widgets = [Bar('>'), ' ', ETA(), ' ', ReverseBar('<')]
-	pbar = ProgressBar(widgets=widgets,maxval=len(all_stocks_dict.keys())).start()
+	pbar = ProgressBar(widgets=widgets,maxval=len(all_stocks_list)).start()
 	for i,code in enumerate(all_stocks_list):
 		try:
 			current_stock = pd.read_sql('SELECT * from \'{}\''.format(code),conn)
