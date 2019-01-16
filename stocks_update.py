@@ -64,7 +64,7 @@ def update_data_base():
 			stock = today_all.loc[code][['open','high','trade','low','volume','changepercent']]
 
 			df_stock = pd.DataFrame([stock])
-			df_stock['date'] = today.strftime("%Y%m%d")
+			df_stock['date'] = today.strftime("%Y-%m-%d")
 			df_stock['volume'] = df_stock['volume']/100.0
 			df_stock.columns = ['open','high','close','low','volume','p_change','date']
 
