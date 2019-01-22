@@ -5,8 +5,8 @@ DATABASE = {
     'drivername': 'mysql',
     'host': 'localhost',
     'port': '3306',
-    'username': 'stock',
-    'password': '494904',
+    'username': '',
+    'password': '',
     'database': 'cnstock',
     'query': {'charset': 'utf8'},
 }
