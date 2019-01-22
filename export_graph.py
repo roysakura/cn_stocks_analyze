@@ -12,6 +12,7 @@ import colorlover as cl
 from sklearn.preprocessing import LabelEncoder
 from collections import Counter
 from pathlib import Path
+from os.path import expanduser
 import os
 import oss2
 
@@ -25,7 +26,9 @@ endpoint = 'http://oss-cn-shenzhen.aliyuncs.com' # Suppose that your bucket is i
 image_domain ="http://news-material.oss-cn-shenzhen.aliyuncs.com/"
 auth = oss2.Auth('LTAI3SvDl7ftuirM', 'iXKSQMMJCOJIzVenlMXgoXtv539zfE')
 bucket = oss2.Bucket(auth, endpoint, 'cnstock')
-home = str(Path.home())
+
+home = expanduser("~")
+#home = str(Path.home())
 
 def export_graphs(conn,date=datetime.datetime.today(),cloud_save=False):
 	## First chart for over all performance
