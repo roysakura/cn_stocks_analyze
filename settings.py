@@ -7,5 +7,6 @@ DATABASE = {
     'port': '3306',
     'username': '',
     'password': '',
-    'database': 'cnstock'
+    'database': 'cnstock',
+    'query': {'charset': 'utf8'}
 }
