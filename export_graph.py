@@ -5,7 +5,6 @@ import pandas as pd
 import numpy as np
 import datetime
 from datetime import timedelta
-from progressbar import ProgressBar,SimpleProgress,Bar,ETA,ReverseBar
 import settings
 import sqlite3
 import colorlover as cl
