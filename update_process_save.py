@@ -22,10 +22,10 @@ def main():
 	today = datetime.datetime.today().strftime('%Y-%m-%d')
 	conn = sqlite3.connect('cn_stocks.db')
 
-    print('Updating today data...\n')
-    update_data_base()
-    
-    print('Exporting Graph...\n')
+	print('Updating today data...\n')
+	update_data_base()
+
+	print('Exporting Graph...\n')
 	export_graphs(conn,date,True)
 	continuous_limit_up_stocks(conn,date,True)
 	strong_industries(conn,date,True)
@@ -33,7 +33,7 @@ def main():
 	break_ma(conn,date,True)
 	continuous_rise_stocks(conn,date,True)
 	top_rise_down(conn,date,True)
-	
+
 	conn.close()
 		#continuous_limit_up_stocks()
 if __name__ == '__main__':
