@@ -13,7 +13,7 @@ from plotly.offline import init_notebook_mode,iplot
 import plotly.graph_objs as go
 import plotly.io as pio
 from stocks_update import update_data_base,is_trade_date
-from export_graphs import *
+from export_graph import *
 
 ts.set_token('3c9fcd3daa9244ca0c45a7e47d5ba14004c9aff7208506910b991f30')
 
