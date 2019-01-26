@@ -19,7 +19,7 @@ ts.set_token('3c9fcd3daa9244ca0c45a7e47d5ba14004c9aff7208506910b991f30')
 
 
 def main():
-	today = datetime.datetime.today().strftime('%Y-%m-%d')
+	today = datetime.datetime.today()
 	conn = sqlite3.connect('cn_stocks.db')
 
 	print('Updating today data...\n')
