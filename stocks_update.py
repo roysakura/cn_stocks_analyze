@@ -68,6 +68,7 @@ def update_data_base():
 			df_stock['volume'] = df_stock['volume']/100.0
 			df_stock.columns = ['open','high','close','low','volume','p_change','date']
 
+			current_stock = current_stock[current_stock['date']< today.strftime("%Y-%m-%d")]
 			df_combine = pd.concat([current_stock.sort_values('date'),df_stock])
 			df_combine['ma5'] = df_combine['ma5'].fillna(df_combine['close'].rolling(5).mean())
 			df_combine['max5'] = df_combine['close'].rolling(5).max()
