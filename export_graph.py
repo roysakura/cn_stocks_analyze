@@ -259,11 +259,12 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 			except:
 				break
 
+	limit_up_stocks = pd.DataFrame()
 	if len(stock_limit_up_record)>0:
 		limit_up_stocks = pd.DataFrame.from_dict(stock_limit_up_record,orient='index')
 	else:
 		return
-		
+
 	limit_up_stocks.columns = ['freq']
 	limit_up_combined = limit_up_stocks[limit_up_stocks.freq>1].merge(all_stocks,left_index=True,right_index=True).sort_values(by='freq',ascending=False)
 
