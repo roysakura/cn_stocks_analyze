@@ -111,8 +111,10 @@ def update_data_base():
 		except Exception as e:
 			ten_years_before = (today-timedelta(days=3650)).strftime("%Y%m%d")
 			stock = ts.get_hist_data(code,ten_years_before,today_str)
-			if (stock is not None) & (len(stock)>0):
+			try:
 				stock.to_sql(code,conn,if_exists='replace',index=False)
+			except Exception as e:
+				print(e)
 			print(e)
 			continue
 
