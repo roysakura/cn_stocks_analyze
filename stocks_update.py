@@ -63,12 +63,15 @@ def update_data_base():
 			current_stock = pd.read_sql('SELECT * from \'{}\''.format(code),conn)
 			stock = today_all.loc[code][['open','high','trade','low','volume','changepercent']]
 
+			current_stock['datetime'] = pd.to_datetime(current_stock['date'])
+			current_stock = current_stock[current_stock['datetime'] < today]
+			current_stock.drop(['datetime'],axis=1,inplace=True)
 			df_stock = pd.DataFrame([stock])
 			df_stock['date'] = today.strftime("%Y-%m-%d")
 			df_stock['volume'] = df_stock['volume']/100.0
 			df_stock.columns = ['open','high','close','low','volume','p_change','date']
 
-			current_stock = current_stock[current_stock['date']< today.strftime("%Y-%m-%d")]
+			current_stock = current_stock[current_stock['date'] < today.strftime("%Y-%m-%d")]
 			df_combine = pd.concat([current_stock.sort_values('date'),df_stock])
 			df_combine['ma5'] = df_combine['ma5'].fillna(df_combine['close'].rolling(5).mean())
 			df_combine['max5'] = df_combine['close'].rolling(5).max()
