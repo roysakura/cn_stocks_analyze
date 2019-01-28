@@ -113,8 +113,8 @@ def update_data_base():
 			stock = ts.get_hist_data(code,ten_years_before,today_str)
 			try:
 				stock.to_sql(code,conn,if_exists='replace',index=False)
-			except Exception as e:
-				print(e)
+			except Exception as ee:
+				print(ee)
 			print(e)
 			continue
 
