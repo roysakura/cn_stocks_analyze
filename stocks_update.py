@@ -106,9 +106,10 @@ def update_data_base():
 
 			df_combine.to_sql(code,conn,if_exists='replace',index=False)
 		except Exception as e:
-			thirty_days_before = (today-timedelta(days=30)).strftime("%Y%m%d")
-			stock = ts.get_hist_data(code,thirty_days_before,today_str)
-			stock.to_sql(code,conn,if_exists='replace',index=False)
+			ten_years_before = (today-timedelta(days=3650)).strftime("%Y%m%d")
+			stock = ts.get_hist_data(code,ten_years_before,today_str)
+			if stock:
+				stock.to_sql(code,conn,if_exists='replace',index=False)
 			print(e)
 			continue
 
