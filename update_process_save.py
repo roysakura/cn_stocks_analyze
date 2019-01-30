@@ -24,6 +24,7 @@ def main():
 
 	print('Updating today data...\n')
 	update_data_base()
+	conn.commit()
 
 	print('Exporting Graph...\n')
 	export_graphs(conn,today,True)
