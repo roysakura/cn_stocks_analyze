@@ -27,7 +27,7 @@ def main():
 	conn.commit()
 
 	print('Exporting Graph...\n')
-	export_graphs(conn,today,True)
+	performance(conn,today,True)
 	continuous_limit_up_stocks(conn,today,True)
 	strong_industries(conn,today,True)
 	strong_week_graph(conn,today,True)

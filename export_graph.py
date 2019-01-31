@@ -29,7 +29,7 @@ bucket = oss2.Bucket(auth, endpoint, 'cnstock')
 home = expanduser("~")
 #home = str(Path.home())
 
-def export_graphs(conn,date=datetime.datetime.today(),cloud_save=False):
+def performance(conn,date=datetime.datetime.today(),cloud_save=False):
 	## First chart for over all performance
 	today_all_changepercent_over_0 =pd.read_sql('select p_change from stocks_125_days where volume>0 and p_change<11 and p_change>0 and date=\'{}\''.format(date),conn)
 	hist_data_today_all_changepercent_over_0 = np.histogram(today_all_changepercent_over_0['p_change'],bins=10,range=(0,11))
@@ -541,7 +541,7 @@ def main():
 		date = sys.argv[1:]
 		date = datetime.datetime.strptime(date[0], '%Y-%m-%d')
 		print('Exporting Graph For Date {}...\n'.format(date))
-		export_graphs(conn,date,True)
+		performance(conn,date,True)
 		continuous_limit_up_stocks(conn,date,True)
 		strong_industries(conn,date,True)
 		strong_week_graph(conn,date,True)
@@ -549,7 +549,7 @@ def main():
 		continuous_rise_stocks(conn,date,True)
 		top_rise_down(conn,date,True)
 	else:
-		#export_graphs(conn)
+		#performance(conn)
 		#continuous_limit_up_stocks(conn)
 		#strong_industries(conn)
 		#strong_week_graph(conn)
