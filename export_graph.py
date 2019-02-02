@@ -140,12 +140,12 @@ def strong_week_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 	fig = go.Figure(data=graph_two, layout=layout_two)
 	iplot(fig)
 	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_3.png".format(date.strftime('%Y%m%d')))
+	file = os.path.join(home,"Documents","cnstocks","{}_1.png".format(date.strftime('%Y%m%d')))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	pio.write_image(fig, file, scale=2)
 	if cloud_save:
-		file_name = "{}_3.png".format(date.strftime('%Y%m%d'))
+		file_name = "{}_1.png".format(date.strftime('%Y%m%d'))
 		bucket.put_object_from_file(file_name,file)
 
 def top_break_graph(conn,date=datetime.datetime.today(),cloud_save=False):
@@ -224,12 +224,12 @@ def top_break_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 	fig = go.Figure(data=graph_three, layout=layout_three)
 	iplot(fig)
 	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_4.png".format(date.strftime('%Y%m%d')))
+	file = os.path.join(home,"Documents","cnstocks","{}_2.png".format(date.strftime('%Y%m%d')))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
 	if cloud_save:
-		file_name = "{}_4.png".format(date.strftime('%Y%m%d'))
+		file_name = "{}_2.png".format(date.strftime('%Y%m%d'))
 		bucket.put_object_from_file(file_name,file)
 
 def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=False):
@@ -291,12 +291,12 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 
 	iplot(fig)
 	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_5.png".format(date.strftime('%Y%m%d')))
+	file = os.path.join(home,"Documents","cnstocks","{}_3.png".format(date.strftime('%Y%m%d')))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
 	if cloud_save:
-		file_name = "{}_5.png".format(date.strftime('%Y%m%d'))
+		file_name = "{}_3.png".format(date.strftime('%Y%m%d'))
 		bucket.put_object_from_file(file_name,file)
 
 def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
@@ -357,12 +357,12 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	iplot(fig)
 	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_6.png".format(date.strftime('%Y%m%d')))
+	file = os.path.join(home,"Documents","cnstocks","{}_4.png".format(date.strftime('%Y%m%d')))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
 	if cloud_save:
-		file_name = "{}_6.png".format(date.strftime('%Y%m%d'))
+		file_name = "{}_4.png".format(date.strftime('%Y%m%d'))
 		bucket.put_object_from_file(file_name,file)
 
 	c = dict( Counter(top_rds['industry']))
@@ -380,12 +380,12 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	fig = go.Figure(data=graph, layout=layout)
 	iplot(fig)
 	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_7.png".format(date.strftime('%Y%m%d')))
+	file = os.path.join(home,"Documents","cnstocks","{}_5.png".format(date.strftime('%Y%m%d')))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
 	if cloud_save:
-		file_name = "{}_7.png".format(date.strftime('%Y%m%d'))
+		file_name = "{}_5.png".format(date.strftime('%Y%m%d'))
 		bucket.put_object_from_file(file_name,file)
 
 	#return top_rds.to_json(orient='index')
@@ -431,12 +431,12 @@ def break_ma(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	iplot(fig)
 	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_8.png".format(date.strftime('%Y%m%d')))
+	file = os.path.join(home,"Documents","cnstocks","{}_6.png".format(date.strftime('%Y%m%d')))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
 	if cloud_save:
-		file_name = "{}_8.png".format(date.strftime('%Y%m%d'))
+		file_name = "{}_6.png".format(date.strftime('%Y%m%d'))
 		bucket.put_object_from_file(file_name,file)
 
 def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False):
@@ -473,12 +473,12 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 
 	iplot(fig)
 	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_9.png".format(date.strftime('%Y%m%d')))
+	file = os.path.join(home,"Documents","cnstocks","{}_7.png".format(date.strftime('%Y%m%d')))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	pio.write_image(fig,file,scale=2)
 	if cloud_save:
-		file_name = "{}_9.png".format(date.strftime('%Y%m%d'))
+		file_name = "{}_7.png".format(date.strftime('%Y%m%d'))
 		bucket.put_object_from_file(file_name,file)
 
 def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
@@ -521,12 +521,12 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	iplot(fig)
 	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_10.png".format(date.strftime('%Y%m%d')))
+	file = os.path.join(home,"Documents","cnstocks","{}_8.png".format(date.strftime('%Y%m%d')))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
 	if cloud_save:
-		file_name = "{}_10.png".format(date.strftime('%Y%m%d'))
+		file_name = "{}_8.png".format(date.strftime('%Y%m%d'))
 		bucket.put_object_from_file(file_name,file)
 
 def signal_gauge(conn,date=datetime.datetime.today()):
