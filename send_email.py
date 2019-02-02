@@ -26,7 +26,7 @@ bucket = oss2.Bucket(auth, endpoint, 'cnstock')
 
 COMMASPACE = ', '
 
-def main():
+def send():
     today = (datetime.datetime.today()).strftime('%Y%m%d')
     sender = '110672023@qq.com'
     gmail_password = 'cflgbqogaggmbibb'
@@ -73,4 +73,4 @@ def main():
         raise
 
 if __name__ == '__main__':
-    main()
+    send()
