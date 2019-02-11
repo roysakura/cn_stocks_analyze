@@ -30,7 +30,7 @@ def send():
     today = (datetime.datetime.today()).strftime('%Y%m%d')
     sender = '110672023@qq.com'
     gmail_password = 'cflgbqogaggmbibb'
-    recipients = ['110672023@qq.com']
+    recipients = ['110672023@qq.com','150096055@qq.com']
     
     # Create the enclosing (outer) message
     outer = MIMEMultipart()
