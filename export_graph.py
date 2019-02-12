@@ -246,7 +246,7 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 
 	stock_limit_up_record = {}
 	for stock_code,stock_record in all_stocks_records.items():
-		if(stock_record<30):
+		if(len(stock_record)<30):
 			continue
 		stock_limit_up_record.setdefault(stock_code,1)
 		stock_record = stock_record[stock_record.date<=date.strftime('%Y-%m-%d')].sort_values(by='date',ascending=False)
