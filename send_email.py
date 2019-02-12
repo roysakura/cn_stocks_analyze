@@ -18,12 +18,14 @@ from email.mime.multipart import MIMEMultipart
 
 import datetime
 import oss2
+from os.path import expanduser
+
 
 endpoint = 'http://oss-cn-shenzhen.aliyuncs.com' # Suppose that your bucket is in the Hangzhou region.
 image_domain ="http://news-material.oss-cn-shenzhen.aliyuncs.com/"
 auth = oss2.Auth('LTAI3SvDl7ftuirM', 'iXKSQMMJCOJIzVenlMXgoXtv539zfE')
 bucket = oss2.Bucket(auth, endpoint, 'cnstock')
-
+home = expanduser("~")
 COMMASPACE = ', '
 
 def send():
@@ -42,7 +44,7 @@ def send():
     # List of attachments
     attachments = range(0,9)
     for i in attachments:
-        file = '{}.png'.format(i)
+        file = os.path.join(home,"Documents","{}.png".format(i))
         result = bucket.get_object_to_file('{}_{}.png'.format(today,i), file)
 
         try:
