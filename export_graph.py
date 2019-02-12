@@ -224,6 +224,37 @@ def top_break_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 	fig = go.Figure(data=graph_three, layout=layout_three)
 	iplot(fig)
 	directory = os.path.join(home,"Documents","cnstocks")
+	file = os.path.join(home,"Documents","cnstocks","{}_9.png".format(date.strftime('%Y%m%d')))
+	if not os.path.exists(directory):
+		os.makedirs(directory)
+	pio.write_image(fig, file,scale=2)
+	if cloud_save:
+		file_name = "{}_9.png".format(date.strftime('%Y%m%d'))
+		bucket.put_object_from_file(file_name,file)
+
+# check if it's ceiling at certain time
+def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
+	all_stocks =pd.read_sql('select code,name,industry from all_stocks',conn)
+	today_limit_up_code =pd.read_sql('select code from stocks_125_days where p_change>=9.9 and date=\'{}\''.format(date),conn)
+	today_ceil_first = pd.read_sql('select distinct code from ceiling_tick where changepercent>=9.9 and datetime >=\'{} 00:00:00\' and datetime <=\'{} 23:59:59\''.format(date.strftime('%Y-%m-%d'),date.strftime('%Y-%m-%d')),conn)
+
+	candidates = all_stocks[all_stocks.code.isin(list(set(today_limit_up_code['code'].tolist()).intersection(today_ceil_first['code'].tolist())))]
+
+	trace = go.Table(
+	header=dict(values=list([u'代码',u'中文',u'所属行业',]),
+	fill = dict(color='#C2D4FF'),
+	align = ['left'] * 5),
+	cells=dict(values=[candidates.code, candidates.name,candidates.industry],
+	align = ['left'] * 5))
+
+	layout = dict(title=u"{} 涨停先锋".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=30),height=max([300,len(candidates)*25]))
+
+	data = [trace]
+
+	fig = go.Figure(data=data,layout=layout)
+
+	iplot(fig)
+	directory = os.path.join(home,"Documents","cnstocks")
 	file = os.path.join(home,"Documents","cnstocks","{}_2.png".format(date.strftime('%Y%m%d')))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
@@ -231,6 +262,7 @@ def top_break_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 	if cloud_save:
 		file_name = "{}_2.png".format(date.strftime('%Y%m%d'))
 		bucket.put_object_from_file(file_name,file)
+
 
 def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=False):
 	all_stocks =pd.read_sql('select code,name,industry from all_stocks',conn).set_index('code')
@@ -550,6 +582,7 @@ def main():
 		break_ma(conn,date,True)
 		continuous_rise_stocks(conn,date,True)
 		top_rise_down(conn,date,True)
+		ceil_first(conn,date,True)
 	else:
 		#performance(conn)
 		#continuous_limit_up_stocks(conn)
