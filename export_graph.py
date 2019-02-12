@@ -23,7 +23,7 @@ import plotly.io as pio
 ts.set_token('3c9fcd3daa9244ca0c45a7e47d5ba14004c9aff7208506910b991f30')
 endpoint = 'http://oss-cn-shenzhen.aliyuncs.com' # Suppose that your bucket is in the Hangzhou region.
 image_domain ="http://news-material.oss-cn-shenzhen.aliyuncs.com/"
-auth = oss2.Auth('LTAI3SvDl7ftuirM', 'iXKSQMMJCOJIzVenlMXgoXtv539zfE')
+auth = oss2.Auth(settings.OSS2_USER, settings.OSS2_PASS)
 bucket = oss2.Bucket(auth, endpoint, 'cnstock')
 
 home = expanduser("~")

@@ -10,3 +10,6 @@ DATABASE = {
     'database': 'cnstock',
     'query': {'charset': 'utf8'},
 }
+
+OSS2_USER = ''
+OSS2_PASS = ''

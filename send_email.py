@@ -15,6 +15,7 @@ import smtplib
 from email import encoders
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
+import settings
 
 import datetime
 import oss2
@@ -23,7 +24,7 @@ from os.path import expanduser
 
 endpoint = 'http://oss-cn-shenzhen.aliyuncs.com' # Suppose that your bucket is in the Hangzhou region.
 image_domain ="http://news-material.oss-cn-shenzhen.aliyuncs.com/"
-auth = oss2.Auth('LTAI3SvDl7ftuirM', 'iXKSQMMJCOJIzVenlMXgoXtv539zfE')
+auth = oss2.Auth(settings.OSS2_USER, settings.OSS2_PASS)
 bucket = oss2.Bucket(auth, endpoint, 'cnstock')
 home = expanduser("~")
 COMMASPACE = ', '
