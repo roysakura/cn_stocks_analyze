@@ -45,7 +45,10 @@ def send():
     attachments = range(0,9)
     for i in attachments:
         file = os.path.join(home,"Documents","{}.png".format(i))
-        result = bucket.get_object_to_file('{}_{}.png'.format(today,i), file)
+        try:
+            result = bucket.get_object_to_file('{}_{}.png'.format(today,i), file)
+        except:
+            continue
 
         try:
             with open(file, 'rb') as fp:
