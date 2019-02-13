@@ -156,14 +156,14 @@ def top_break_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 	for code in code_list:
 		cur_stock = stocks_60[stocks_60.code==code].sort_values('date')
 		top_break_dates = cur_stock[cur_stock.close>=cur_stock.max120]['date'].values.tolist()
-		for date in top_break_dates:
-			top_break_through.setdefault(date,[])
-			top_break_through[date].append(code)
+		for tdate in top_break_dates:
+			top_break_through.setdefault(tdate,[])
+			top_break_through[tdate].append(code)
 
 		down_break_dates = cur_stock[cur_stock.close<=cur_stock.min120]['date'].values.tolist()
-		for date in down_break_dates:
-			down_break_through.setdefault(date,[])
-			down_break_through[date].append(code)
+		for ddate in down_break_dates:
+			down_break_through.setdefault(ddate,[])
+			down_break_through[ddate].append(code)
 
 	top_break_records = pd.DataFrame.from_dict(top_break_through,orient='index')
 	top_break_records.index = pd.to_datetime(top_break_records.index)
