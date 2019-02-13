@@ -135,7 +135,6 @@ def strong_week_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 	layout_two = dict(title = u'市场表现二',
 	yaxis=go.layout.YAxis(ticktext=labels,tickvals=tickvals),
 	xaxis = dict(title = '数量',tick0=0, dtick=100),
-	legend=dict(orientation='h')
 	)
 	fig = go.Figure(data=graph_two, layout=layout_two)
 	iplot(fig)
@@ -314,7 +313,7 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 	align = ['left'] * 5),
 	cells=dict(values=[limit_up_combined.code, limit_up_combined.name, limit_up_combined.freq, limit_up_combined.industry],
 	fill = dict(color=[limit_up_combined.color]),
-	font = dict(color='white'),
+	font = dict(color='black'),
 	align = ['left'] * 5))
 
 	layout = dict(title=u"{} 连板统计".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=30),height=max([300,len(limit_up_combined)*25]))
@@ -375,15 +374,15 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	top_rds['color'] = LabelEncoder().fit_transform(top_rds['date'])
 	top_rds['color'] = top_rds['color'].map(lambda x:colors[x])
 	trace = go.Table(
-	header=dict(values=list([u'日期',u'所属行业',u'涨停个股',u'成员个股',]),
+	header=dict(values=list([u'日期',u'所属行业',u'涨停个股',]),
 	fill = dict(color='#C2D4FF'),
 	align = ['left'] * 5),
-	cells=dict(values=[top_rds.date, top_rds.industry, top_rds.number, top_rds.member],
+	cells=dict(values=[top_rds.date, top_rds.industry, top_rds.number],
 	fill = dict(color=[top_rds.color]),
-	font = dict(color='white'),
+	font = dict(color='black'),
 	align = ['left'] * 5))
 
-	layout = dict(title=u"连续走强行业",margin=dict(l=0,r=0,b=0,t=30),height=max([300,len(top_rds)*25]))
+	layout = dict(title=u"每日强势板块",margin=dict(l=0,r=0,b=0,t=30),height=max([300,len(top_rds)*25]))
 
 	data = [trace]
 
@@ -493,13 +492,27 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 	continuous_rise_df = continuous_rise_df.merge(all_stocks,on='code',how='left')
 	continuous_rise_df = continuous_rise_df[continuous_rise_df.score>14]
 
+	continuous_rise_candidate = {}
+	for n,g in stocks_60[stocks_60.code.isin(continuous_rise_df['code'].tolist())].groupby('code'):
+		sorted_rds = g.sort_values('date')
+		cumulate_rise = round((sorted_rds.iloc[-1]['close']-sorted_rds.iloc[0]['open'])/sorted_rds.iloc[0]['open'],2)
+		if cumulate_rise >=0.2 and cumulate_rise <=0.4:
+			continuous_rise_candidate[n]=cumulate_rise
+
+	continuous_rise_candidate_df = pd.DataFrame.from_dict(continuous_rise_candidate,orient='index')
+	continuous_rise_candidate_df.columns = ['accumulate']
+	continuous_rise_candidate_df = continuous_rise_candidate_df.sort_values('accumulate',ascending=False).reset_index()
+	continuous_rise_candidate_df.columns = ['code','accumulate']
+	continuous_rise_candidate_df = continuous_rise_candidate_df.merge(all_stocks,on='code',how='left')
+	continuous_rise_candidate_df = continuous_rise_candidate_df.head(10)
+
 	trace = go.Table(
-	header=dict(values=list([u'号码',u'中文',u'所属行业',u'连涨天数']),
+	header=dict(values=list([u'号码',u'中文',u'所属行业',u'累计涨幅']),
 	fill = dict(color='#C2D4FF')),
-	cells=dict(values=[continuous_rise_df.code, continuous_rise_df.name, continuous_rise_df.industry,continuous_rise_df.score]),
+	cells=dict(values=[continuous_rise_candidate_df.code, continuous_rise_candidate_df.name, continuous_rise_candidate_df.industry,continuous_rise_candidate_df.accumulate]),
 	)
 
-	layout = dict(title=u"{} 连涨股".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=30),height=max([300,len(continuous_rise_df)*25]))
+	layout = dict(title=u"{} 连涨股".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=30),height=max([100,len(continuous_rise_df)*5]))
 
 	data = [trace]
 
@@ -521,14 +534,14 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 	all_stocks = pd.read_sql('select code,name,industry from all_stocks',conn)
 	one_year_before = (datetime.datetime.today()-timedelta(days=120)).strftime("%Y%m%d")
 	cal = pro.trade_cal(start_date=one_year_before, end_date=datetime.datetime.today().strftime("%Y%m%d")).sort_values('cal_date',ascending=False)
-	d_range = [datetime.datetime.strptime(d,'%Y%m%d') for d in cal[cal.is_open==1][:5].sort_values('cal_date')['cal_date']]
+	d_range = [datetime.datetime.strptime(d,'%Y%m%d') for d in cal[cal.is_open==1][:6].sort_values('cal_date')['cal_date']]
 	stocks_60['date'] = pd.to_datetime(stocks_60['date'])
 	stocks_60_sub_5_days = stocks_60[stocks_60.date.isin(d_range)].sort_values('date',ascending=False)
 	today_top_rise = {}
 	for n,g in stocks_60_sub_5_days.groupby('code'):
 		today_top_rise.setdefault(n,0)
 		try:
-			today_top_rise[n] = (g.iloc[0]['close']-g.iloc[4]['close'])/g.iloc[4]['open']
+			today_top_rise[n] = (g.iloc[0]['close']-g.iloc[4]['open'])/g.iloc[4]['open']
 		except:
 			continue
 
@@ -541,10 +554,14 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 	today_top_bottom = today_top_bottom.merge(all_stocks,on='code',how='left')
 	today_top_bottom['p_change_str'] = today_top_bottom['p_change'].map(lambda x: '{0:.0f}%'.format(x*100))
 
+	today_top_bottom['color'] = today_top_bottom['p_change'].map(lambda x: '#d10031' if x>0 else '#02c927')
+
 	trace = go.Table(
 	header=dict(values=list([u'号码',u'中文',u'所属行业',u'幅度']),
-	fill = dict(color='#C2D4FF')),
-	cells=dict(values=[today_top_bottom.code, today_top_bottom.name, today_top_bottom.industry,today_top_bottom.p_change_str]),
+	),
+	cells=dict(values=[today_top_bottom.code, today_top_bottom.name, today_top_bottom.industry,today_top_bottom.p_change_str],
+	fill = dict(color=[today_top_bottom.color])
+	)
 	)
 
 	layout = dict(title=u"{} 五天涨跌幅排行榜".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=30),height=max([300,len(today_top_bottom)*25]))
@@ -583,6 +600,7 @@ def main():
 		continuous_rise_stocks(conn,date,True)
 		top_rise_down(conn,date,True)
 		ceil_first(conn,date,True)
+		top_rise_down(conn,date,True)
 	else:
 		#performance(conn)
 		#continuous_limit_up_stocks(conn)
