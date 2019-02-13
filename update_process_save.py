@@ -31,7 +31,7 @@ def main():
 	print('Exporting Graph...\n')
 	performance(conn,today,True)
 	continuous_limit_up_stocks(conn,today,True)
-	ceil_first(conn,date,True)
+	ceil_first(conn,today,True)
 	top_break_graph(conn,today,True)
 	strong_industries(conn,today,True)
 	strong_week_graph(conn,today,True)
