@@ -398,7 +398,8 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 		file_name = "{}_4.png".format(date.strftime('%Y%m%d'))
 		bucket.put_object_from_file(file_name,file)
 
-	c = dict( Counter(top_rds['industry']))
+	#Top 5 
+	c = dict( Counter(top_rds[:6]['industry']))
 	industry_top = pd.DataFrame.from_dict(c,orient='index')
 	industry_top.columns = ['number']
 	industry_top = industry_top.sort_values('number',ascending=False)
