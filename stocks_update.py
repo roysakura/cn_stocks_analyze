@@ -60,7 +60,7 @@ def update_data_base():
 	pbar = ProgressBar(widgets=widgets,maxval=len(all_stocks_list)).start()
 	for i,code in enumerate(all_stocks_list):
 		try:
-			current_stock = pd.read_sql('SELECT * from \'{}\''.format(code),conn)
+			current_stock = pd.read_sql('SELECT * from \'{}\''.format(code),conn).drop_duplicates(subset=['date'])
 			stock = today_all.loc[code][['open','high','trade','low','volume','changepercent']]
 
 			current_stock['datetime'] = pd.to_datetime(current_stock['date'])
