@@ -78,7 +78,7 @@ def update_data_base():
 			df_combine['l_high'] = df_combine['high'].shift(1)
 			df_combine['l_low'] = df_combine['low'].shift(1)
 			df_combine['price_change'] = np.around((df_combine['close'] - df_combine['l_close']),decimals=2)
-			df_combine['limit'] = df_combine.apply(lambda x: 1 if x['close']>=np.around((x['l_close']*1.1),decimals=2) else (-1 if x['close']<=np.around((x['l_close']*0.9),decimals=2) else 0),axis=1)
+			df_combine['islimit'] = df_combine.apply(lambda x: 1 if x['close']>=np.around((x['l_close']*1.1),decimals=2) else (-1 if x['close']<=np.around((x['l_close']*0.9),decimals=2) else 0),axis=1)
 			df_combine['ma5'] = df_combine['ma5'].fillna(df_combine['close'].rolling(5).mean())
 			df_combine['max5'] = df_combine['close'].rolling(5).max()
 			df_combine['min5'] = df_combine['close'].rolling(5).min()
