@@ -43,7 +43,7 @@ def send():
     outer.preamble = 'You will not see this in a MIME-aware mail reader.\n'
 
     # List of attachments
-    attachments = range(0,10)
+    attachments = range(0,11)
     for i in attachments:
         file = os.path.join(home,"Documents","{}.png".format(i))
         try:
