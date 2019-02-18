@@ -20,6 +20,8 @@ from plotly.offline import init_notebook_mode,iplot
 import plotly.graph_objs as go
 import plotly.io as pio
 
+from PIL import Image,ImageDraw,ImageFont
+
 ts.set_token('3c9fcd3daa9244ca0c45a7e47d5ba14004c9aff7208506910b991f30')
 endpoint = 'http://oss-cn-shenzhen.aliyuncs.com' # Suppose that your bucket is in the Hangzhou region.
 image_domain ="http://news-material.oss-cn-shenzhen.aliyuncs.com/"
@@ -583,54 +585,25 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 		bucket.put_object_from_file(file_name,file)
 
 def signal_trend(conn,date=datetime.datetime.today(),cloud_save=False):
-	daterange = get_dayrange(startfrom=date,num=11)
+	daterange = get_dayrange(startfrom=date,num=1)
 	stocks_60 = pd.read_sql('select * from stocks_60_days where volume>0',conn)
 	stocks_60['date'] = pd.to_datetime(stocks_60['date'])
-	stocks_60_sub_5_days = stocks_60[stocks_60.date.isin(daterange)]
-	signal = {}
-	for i,d in enumerate(daterange):
-		try:
-			yesterday_top_break = stocks_60_sub_5_days[(stocks_60_sub_5_days.date == daterange[i+1]) & (stocks_60_sub_5_days.islimit==1)].sort_values('code')
-			today_good_pratice = stocks_60_sub_5_days[(stocks_60_sub_5_days.date == daterange[i]) & (stocks_60_sub_5_days.code.isin(yesterday_top_break['code'].tolist()))].sort_values('code')
-			signal[d]= round(np.sum(np.where((today_good_pratice['high'].reset_index()['high']-yesterday_top_break['close'].reset_index()['close'])/yesterday_top_break['close'].reset_index()['close']>=0.08,1,0))/len(yesterday_top_break),2)
-		except:
-			pass
+	stocks_60 = stocks_60[stocks_60.date.isin(daterange)]
 
-	signal_df = pd.DataFrame.from_dict(signal,orient='index')
-	signal_df = signal_df.reset_index()
-	signal_df.columns = ['date','signal']
-	signal_df['rank'] = signal_df['signal'].map(lambda x: 0 if x<0.20 else (1 if x>=0.2 and x<0.4 else (2 if x>=0.4 and x<0.6 else (3 if x>=0.6 and x<0.8 else 4))))
-	signal_cn = {0:u'很弱',1:u'弱',2:'强',3:u'很强',4:u'超级强'}
-	signal_df = signal_df.sort_values('date')
+	yesterday_top_break = stocks_60[(stocks_60.date == daterange[1]) & (stocks_60.islimit==1)].sort_values('code')
+	today_good_pratice = stocks_60[(stocks_60.date == daterange[0]) & (stocks_60.code.isin(yesterday_top_break['code'].tolist()))].sort_values('code')
+	signal = round(np.sum(np.where((today_good_pratice['high'].reset_index()['high']-yesterday_top_break['close'].reset_index()['close'])/yesterday_top_break['close'].reset_index()['close']>=0.08,1,0))/len(yesterday_top_break),2)
 
-	
+	ttfont = ImageFont.truetype("imgs/hwfs.ttf",120)
+	im = Image.open('imgs/s-0{}.png'.format(0 if signal<0.20 else (1 if signal>=0.2 and signal<0.4 else (2 if signal>=0.4 and signal<0.6 else (3 if signal>=0.6 and signal<0.8 else 4)))))
+	draw = ImageDraw.Draw(im)
+	draw.text((1400,225),u'{} 赚钱效应'.format(date.strftime('%Y/%m/%d')),fill=(0,0,0),font=ttfont)
 
-	data = [
-    {
-        'x': ([d.strftime('%m/%d') for d in signal_df['date']]),
-        'y': [1 for d in daterange],
-        'text':signal_df['rank'].map(signal_cn),
-        'mode': 'markers+text',
-        'marker': {
-            'color':[x*5+120 for x in signal_df['rank']],
-            'size': [(x+1)*(20-2*x) for x in signal_df['rank']],
-        }
-    }
-	]
-
-	layout = dict(title=u"{} 赚钱效应".format(date.strftime("%Y/%m/%d")),
-	yaxis = dict(tick0=0, dtick=1),
-	margin=dict(l=20,r=20,b=20)
-	)
-
-	fig = go.Figure(data=data,layout=layout)
-
-	iplot(fig)
 	directory = os.path.join(home,"Documents","cnstocks")
 	file = os.path.join(home,"Documents","cnstocks","{}_10.png".format(date.strftime('%Y%m%d')))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
-	pio.write_image(fig, file,scale=2)
+	im.save(file)
 	if cloud_save:
 		file_name = "{}_10.png".format(date.strftime('%Y%m%d'))
 		bucket.put_object_from_file(file_name,file)
