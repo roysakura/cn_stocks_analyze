@@ -272,7 +272,7 @@ def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
 	cells=dict(values=[candidates.code, candidates.name,candidates.industry],
 	align = ['left'] * 5))
 
-	layout = dict(title=u"{} 涨停先锋".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=30),height=max([300,len(candidates)*25]))
+	layout = dict(title=u"{} 一马当先".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(candidates)*25]))
 
 	data = [trace]
 
@@ -324,7 +324,7 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 	font = dict(color='black'),
 	align = ['left'] * 5))
 
-	layout = dict(title=u"{} 连板统计".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=30),height=max([300,len(limit_up_combined)*25]))
+	layout = dict(title=u"{} 连板统计".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(limit_up_combined)*25]))
 
 	data = [trace]
 
@@ -390,7 +390,7 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	font = dict(color='black'),
 	align = ['left'] * 5))
 
-	layout = dict(title=u"每日强势板块",margin=dict(l=0,r=0,b=0,t=30),height=max([300,len(top_rds)*25]))
+	layout = dict(title=u"每日强势板块",margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(top_rds)*25]))
 
 	data = [trace]
 
@@ -465,7 +465,7 @@ def break_ma(conn,date=datetime.datetime.today(),cloud_save=False):
 	cells=dict(values=[bt_df.code, bt_df.name, bt_df.industry,bt_df.p_change],
 	align = ['left'] * 5))
 
-	layout = dict(title=u"{} 突破图".format(two_days[1].strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=30),height=max([300,len(bt_df)*25]))
+	layout = dict(title=u"{} 突破图".format(two_days[1].strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(bt_df)*25]))
 
 	data = [trace]
 
@@ -506,17 +506,19 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 	continuous_rise_candidate_df.columns = ['accumulate']
 	continuous_rise_candidate_df = continuous_rise_candidate_df.sort_values('accumulate',ascending=False).reset_index()
 	continuous_rise_candidate_df.columns = ['code','accumulate']
+	continuous_rise_candidate_df = continuous_rise_candidate_df.merge(stocks_60[stocks_60.date==daterange[0]],on='code',how='left')
 	continuous_rise_candidate_df['accumulate'] = continuous_rise_candidate_df['accumulate'].map(lambda x: '{}%'.format(x))
+	continuous_rise_candidate_df['p_change'] = continuous_rise_candidate_df['p_change'].map(lambda x: '{}%'.format(round(x,2)))
 	continuous_rise_candidate_df = continuous_rise_candidate_df.merge(all_stocks,on='code',how='left')
 	continuous_rise_candidate_df = continuous_rise_candidate_df.head(10)
 
 	trace = go.Table(
-	header=dict(values=list([u'号码',u'名称',u'所属行业',u'累计涨幅']),
+	header=dict(values=list([u'号码',u'名称',u'所属行业',u'今日涨幅']),
 	fill = dict(color='#C2D4FF')),
-	cells=dict(values=[continuous_rise_candidate_df.code, continuous_rise_candidate_df.name, continuous_rise_candidate_df.industry,continuous_rise_candidate_df.accumulate]),
+	cells=dict(values=[continuous_rise_candidate_df.code, continuous_rise_candidate_df.name, continuous_rise_candidate_df.industry,continuous_rise_candidate_df.p_change]),
 	)
 
-	layout = dict(title=u"{} 连涨股".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=30),height=max([300,len(continuous_rise_candidate_df)*25]))
+	layout = dict(title=u"{} 步步高升".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(continuous_rise_candidate_df)*25]))
 
 	data = [trace]
 
@@ -568,7 +570,7 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 	)
 	)
 
-	layout = dict(title=u"{} 五天涨跌幅排行榜".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=30),height=max([300,len(today_top_bottom)*25]))
+	layout = dict(title=u"{} 五天涨跌幅排行榜".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(today_top_bottom)*25]))
 
 	data = [trace]
 
