@@ -38,7 +38,8 @@ def main():
 	break_ma(conn,today,True)
 	continuous_rise_stocks(conn,today,True)
 	top_rise_down(conn,today,True)
-
+	signal_trend(conn,date,True)
+	
 	conn.close()
 		#continuous_limit_up_stocks()
 	send()
