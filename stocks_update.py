@@ -121,8 +121,8 @@ def update_data_base():
 			try:
 				stock.to_sql(code,conn,if_exists='replace',index=False)
 			except Exception as ee:
-				print(ee)
-			print(e)
+				print('ee->{}'.format(ee))
+			print('e->{}'.format(e))
 			continue
 
 		pbar.update(i + 1)
