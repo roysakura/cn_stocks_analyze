@@ -36,7 +36,7 @@ def ceil():
 	pro = ts.pro_api()
 
 	## Check if today is trade day, if not, then return
-	today = datetime.datetime.today()-timedelta(days=1)
+	today = datetime.datetime.today()
 	today_str = today.strftime("%Y-%m-%d")
 	if not is_trade_date(today):
 		return
@@ -44,18 +44,21 @@ def ceil():
 	daterange = get_dayrange(startfrom=today,num=2)
 	yesterday_all = pd.read_sql('select * from stocks_60_days where date=\'{} 00:00:00\''.format(daterange[1].strftime('%Y-%m-%d')),conn)
 	yesterday_all = yesterday_all[['code','close']]
-	now =datetime.datetime.now()
-	now_str = now.strftime("%Y-%m-%d %H:%M:%S")
 	
+
+	hist = pd.read_sql('select * from ceiling_tick where date=\'{}\''.format(today.strftime('%Y-%m-%d')),conn)
+	conn.execute('delete from ceiling_tick where date=\'{}\''.format(today.strftime('%Y-%m-%d')),conn)
+	conn.commit()
 
 	## Start do updating
 	today_all  = ts.get_today_all()
-	today_all['datetime'] = now_str
-	today_all = today_all.merge(yesterday_all,on='code',how='left')
-	today_all['limit'] = today_all['trade']>=np.round(today_all['close']*1.1,2)
-	today_all = today_all[today_all.limit==True]
-	today_all.drop(['limit','close'],axis=1,inplace=True)
-	today_all.reset_index().to_sql('ceiling_tick',conn,if_exists='append',index=False)
+	today_all['date'] = today_str
+	today_all['islimit'] = today_all['trade']>=np.round(today_all['close']*1.1,2)
+	today_all = today_all[today_all.islimit==True]
+	candidates = list(set(today_all['code'].tolist()).intersection(hist['code'].tolist())) 
+	today_all = today_all[today_all.code.isin(candidates)]
+	today_all.drop(['islimit','close'],axis=1,inplace=True)
+	today_all.reset_index().to_sql('ceiling_tick',conn,if_exists='replace',index=False)
 	
 def main():
     print('Updating data...\n')
