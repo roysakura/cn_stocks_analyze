@@ -46,10 +46,12 @@ def ceil():
 	yesterday_all = yesterday_all[['code','close']]
 	
 
-	hist = pd.read_sql('select * from ceiling_tick where date=\'{}\''.format(today.strftime('%Y-%m-%d')),conn)
-	conn.execute('delete from ceiling_tick where date=\'{}\''.format(today.strftime('%Y-%m-%d')),conn)
-	conn.commit()
-
+	try:
+		hist = pd.read_sql('select * from ceiling_tick where date=\'{}\''.format(today.strftime('%Y-%m-%d')),conn)
+		conn.execute('delete from ceiling_tick where date=\'{}\''.format(today.strftime('%Y-%m-%d')),conn)
+		conn.commit()
+	except:
+		pass
 	## Start do updating
 	today_all  = ts.get_today_all()
 	today_all['date'] = today_str
