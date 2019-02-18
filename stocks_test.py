@@ -23,7 +23,7 @@ widgets = [Bar('>'), ' ', ETA(), ' ', ReverseBar('<')]
 pbar = ProgressBar(widgets=widgets,maxval=len(all_stocks_list)).start()
 for i,code in enumerate(all_stocks_list):
 		try:
-			cur.execute('DELETE FROM \'{}\' WHERE date=\'20190116\''.format(code))
+			cur.execute('DELETE FROM \'{}\' WHERE date=\'20190218\''.format(code))
 			conn.commit()
 		except Exception as e:
 			print(e)
