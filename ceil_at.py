@@ -46,20 +46,21 @@ def ceil():
 	yesterday_all = yesterday_all[['code','close']]
 	
 
-	try:
-		hist = pd.read_sql('select * from ceiling_tick where date=\'{}\''.format(today.strftime('%Y-%m-%d')),conn)
-		conn.execute('delete from ceiling_tick where date=\'{}\''.format(today.strftime('%Y-%m-%d')),conn)
-		conn.commit()
-	except:
-		pass
-
 	## Start do updating
 	today_all  = ts.get_today_all()
 	today_all = today_all.merge(yesterday_all,on='code',how='left')
 	today_all['date'] = today_str
 	today_all['islimit'] = today_all['trade']>=np.round(today_all['close']*1.1,2)
 	today_all = today_all[today_all.islimit==True]
-	candidates = list(set(today_all['code'].tolist()).intersection(hist['code'].tolist())) 
+	
+	try:
+		hist = pd.read_sql('select * from ceiling_tick where date=\'{}\''.format(today.strftime('%Y-%m-%d')),conn)
+		conn.execute('delete from ceiling_tick where date=\'{}\''.format(today.strftime('%Y-%m-%d')),conn)
+		conn.commit()
+		candidates = list(set(today_all['code'].tolist()).intersection(hist['code'].tolist())) 
+	except:
+		candidates = today_all['code'].tolist()
+	
 	today_all = today_all[today_all.code.isin(candidates)]
 	today_all.drop(['islimit','close'],axis=1,inplace=True)
 	today_all.reset_index().to_sql('ceiling_tick',conn,if_exists='replace',index=False)
