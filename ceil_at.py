@@ -52,8 +52,10 @@ def ceil():
 		conn.commit()
 	except:
 		pass
+
 	## Start do updating
 	today_all  = ts.get_today_all()
+	today_all = today_all.merge(yesterday_all,on='code',how='left')
 	today_all['date'] = today_str
 	today_all['islimit'] = today_all['trade']>=np.round(today_all['close']*1.1,2)
 	today_all = today_all[today_all.islimit==True]
