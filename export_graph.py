@@ -29,6 +29,16 @@ bucket = oss2.Bucket(auth, endpoint, 'cnstock')
 home = expanduser("~")
 #home = str(Path.home())
 
+#Return numbers of trade day date list.
+def get_dayrange(startfrom,num=5):
+	pro = ts.pro_api()
+	days_before = (startfrom-timedelta(days=120)).strftime("%Y%m%d")
+	cal = pro.trade_cal(start_date=days_before, end_date=startfrom.strftime("%Y%m%d")).sort_values('cal_date',ascending=False)
+	d_range = [datetime.datetime.strptime(d,'%Y%m%d') for d in cal[cal.is_open==1][:(num+1)].sort_values('cal_date',ascending=False)['cal_date']]
+
+	return d_range
+
+
 def performance(conn,date=datetime.datetime.today(),cloud_save=False):
 	## First chart for over all performance
 	today_all_changepercent_over_0 =pd.read_sql('select p_change from stocks_125_days where volume>0 and p_change<11 and p_change>0 and date=\'{}\''.format(date),conn)
@@ -233,14 +243,28 @@ def top_break_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 
 # check if it's ceiling at certain time
 def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
+	daterange = get_dayrange(startfrom=date,num=2)
 	all_stocks =pd.read_sql('select code,name,industry from all_stocks',conn)
-	today_limit_up_code =pd.read_sql('select code from stocks_125_days where p_change>=9.9 and date=\'{}\''.format(date),conn)
-	today_ceil_first = pd.read_sql('select distinct code from ceiling_tick where changepercent>=9.9 and datetime >=\'{} 00:00:00\' and datetime <=\'{} 23:59:59\''.format(date.strftime('%Y-%m-%d'),date.strftime('%Y-%m-%d')),conn)
+	first_limit_up =pd.read_sql('select * from stocks_60_days where islimit=1 and date<=\'{} 00:00:00\' and date>=\'{} 00:00:00\''.format(daterange[0].strftime('%Y-%m-%d'),daterange[1].strftime('%Y-%m-%d')),conn).drop_duplicates(subset=['code'],keep=False)
+	first_limit_up = first_limit_up[(first_limit_up.date==date.strftime('%Y-%m-%d 00:00:00')) & (first_limit_up.close!=first_limit_up.open)]
+	today_ceil_first = pd.read_sql('select distinct code from ceiling_tick where date=\'{}\''.format(date.strftime('%Y-%m-%d')),conn)
 
-	candidates = all_stocks[all_stocks.code.isin(list(set(today_limit_up_code['code'].tolist()).intersection(today_ceil_first['code'].tolist())))]
+	candidates = all_stocks[all_stocks.code.isin(list(set(first_limit_up['code'].tolist()).intersection(today_ceil_first['code'].tolist())))]
+
+	#delete IPO
+	ipo=[]
+	for code in candidates.code.tolist():
+		try:
+			stock_record = pd.read_sql('select * from \'{}\';'.format(code),conn)
+			if len(stock_record)<30:
+				ipo.append(code)
+		except:
+			pass
+	#delete t and flat
+	candidates = candidates[~candidates.code.isin(ipo)]
 
 	trace = go.Table(
-	header=dict(values=list([u'代码',u'中文',u'所属行业',]),
+	header=dict(values=list([u'代码',u'名称',u'所属行业',]),
 	fill = dict(color='#C2D4FF'),
 	align = ['left'] * 5),
 	cells=dict(values=[candidates.code, candidates.name,candidates.industry],
@@ -265,32 +289,14 @@ def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
 
 def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=False):
 	all_stocks =pd.read_sql('select code,name,industry from all_stocks',conn).set_index('code')
-	today_limit_up_code =pd.read_sql('select code from stocks_125_days where p_change>=9.9 and date=\'{}\''.format(date),conn)
-	all_stocks_records = {}
-	for stock_code in today_limit_up_code['code'].tolist():
-		try:
-			stock_record = pd.read_sql('select * from \'{}\';'.format(stock_code),conn)
-			stock_record = stock_record.drop_duplicates()
-			all_stocks_records[stock_code] = stock_record
-		except:
-			continue
-
+	today_limit_up_code =pd.read_sql('select code from stocks_60_days where islimit=1 and date=\'{}\''.format(date),conn)
 	stock_limit_up_record = {}
-	for stock_code,stock_record in all_stocks_records.items():
-		if(len(stock_record)<30):
+	for stock_code in today_limit_up_code['code'].tolist():
+		stock_record = pd.read_sql('select * from \'{}\' where date<=\'{}\';'.format(stock_code,date),conn)
+		limit_str = ''.join([str(x) for x in stock_record.sort_values('date',ascending=False)['islimit'].values.tolist()])
+		if len(limit_str)<30:
 			continue
-		stock_limit_up_record.setdefault(stock_code,1)
-		stock_record = stock_record[stock_record.date<=date.strftime('%Y-%m-%d')].sort_values(by='date',ascending=False)
-
-		for idx in range(1,len(stock_record)):
-			try:
-				pchange = (stock_record.iloc[idx]['close']-stock_record.iloc[idx+1]['close'])/stock_record.iloc[idx+1]['close']
-				if pchange>=0.099:
-					stock_limit_up_record[stock_code]+=1
-				else:
-					break
-			except:
-				break
+		stock_limit_up_record[stock_code] = limit_str.find('0')
 
 	limit_up_stocks = pd.DataFrame()
 	if len(stock_limit_up_record)>0:
@@ -308,7 +314,7 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 	limit_up_combined['color'] = limit_up_combined['freq'].map(lambda x: colors[x] if x<=8 else colors[8])
 
 	trace = go.Table(
-	header=dict(values=list([u'代码',u'中文',u'连板次数',u'所属行业',]),
+	header=dict(values=list([u'代码',u'名称',u'连板次数',u'所属行业',]),
 	fill = dict(color='#C2D4FF'),
 	align = ['left'] * 5),
 	cells=dict(values=[limit_up_combined.code, limit_up_combined.name, limit_up_combined.freq, limit_up_combined.industry],
@@ -475,45 +481,40 @@ def break_ma(conn,date=datetime.datetime.today(),cloud_save=False):
 
 def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False):
 	continuous_rise = {}
+	daterange = get_dayrange(startfrom=date,num=31)
 	all_stocks = pd.read_sql('select code,name,industry from all_stocks',conn)
-	stocks_60 = pd.read_sql('select * from stocks_60_days',conn)
+	stocks_60 = pd.read_sql('select * from stocks_60_days where volume>0',conn)
+	stocks_60['date'] = pd.to_datetime(stocks_60['date'])
+	stocks_60 = stocks_60[stocks_60.date.isin(daterange)]
 	stocks_60 = stocks_60.sort_values('date',ascending=False)
-	stocks_60 = stocks_60[stocks_60.volume>0]
 	for n,g in stocks_60.groupby('code'):
+		if len(g)<30:
+			continue
 		continuous_rise.setdefault(n,0)
 		try:
-			continuous_rise[n] = ((g['p_change'] > 0).cumsum().iloc[19])
+			accumulate_change = (g.iloc[0]['close']-g.iloc[10]['close'])/g.iloc[10]['close']
 		except:
-			continuous_rise[n] = ((g['p_change'] > 0).cumsum().iloc[-1])
+			continue
 
-	continuous_rise_df = pd.DataFrame.from_dict(continuous_rise,orient='index')
-	continuous_rise_df.columns = ['score']
-	continuous_rise_df = continuous_rise_df.sort_values('score',ascending=False).reset_index()
-	continuous_rise_df.columns = ['code','score']
-	continuous_rise_df = continuous_rise_df.merge(all_stocks,on='code',how='left')
-	continuous_rise_df = continuous_rise_df[continuous_rise_df.score>14]
+		if (accumulate_change>=0.2) and (g.iloc[0:11]['p_change']>0).sum()>=8:
+			continuous_rise[n] = round(accumulate_change*100,2) 
 
-	continuous_rise_candidate = {}
-	for n,g in stocks_60[stocks_60.code.isin(continuous_rise_df['code'].tolist())].groupby('code'):
-		sorted_rds = g.sort_values('date')
-		cumulate_rise = round((sorted_rds.iloc[-1]['close']-sorted_rds.iloc[0]['open'])/sorted_rds.iloc[0]['open'],2)
-		if cumulate_rise >=0.2 and cumulate_rise <=0.4:
-			continuous_rise_candidate[n]=cumulate_rise
 
-	continuous_rise_candidate_df = pd.DataFrame.from_dict(continuous_rise_candidate,orient='index')
+	continuous_rise_candidate_df = pd.DataFrame.from_dict(continuous_rise,orient='index')
 	continuous_rise_candidate_df.columns = ['accumulate']
 	continuous_rise_candidate_df = continuous_rise_candidate_df.sort_values('accumulate',ascending=False).reset_index()
 	continuous_rise_candidate_df.columns = ['code','accumulate']
+	continuous_rise_candidate_df['accumulate'] = continuous_rise_candidate_df['accumulate'].map(lambda x: '{}%'.format(x))
 	continuous_rise_candidate_df = continuous_rise_candidate_df.merge(all_stocks,on='code',how='left')
 	continuous_rise_candidate_df = continuous_rise_candidate_df.head(10)
 
 	trace = go.Table(
-	header=dict(values=list([u'号码',u'中文',u'所属行业',u'累计涨幅']),
+	header=dict(values=list([u'号码',u'名称',u'所属行业',u'累计涨幅']),
 	fill = dict(color='#C2D4FF')),
 	cells=dict(values=[continuous_rise_candidate_df.code, continuous_rise_candidate_df.name, continuous_rise_candidate_df.industry,continuous_rise_candidate_df.accumulate]),
 	)
 
-	layout = dict(title=u"{} 连涨股".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=30),height=max([100,len(continuous_rise_df)*5]))
+	layout = dict(title=u"{} 连涨股".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=30),height=max([300,len(continuous_rise_candidate_df)*25]))
 
 	data = [trace]
 
@@ -533,16 +534,16 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 	pro = ts.pro_api()
 	stocks_60 = pd.read_sql('select * from stocks_60_days where volume>0',conn)
 	all_stocks = pd.read_sql('select code,name,industry from all_stocks',conn)
-	one_year_before = (datetime.datetime.today()-timedelta(days=120)).strftime("%Y%m%d")
-	cal = pro.trade_cal(start_date=one_year_before, end_date=datetime.datetime.today().strftime("%Y%m%d")).sort_values('cal_date',ascending=False)
-	d_range = [datetime.datetime.strptime(d,'%Y%m%d') for d in cal[cal.is_open==1][:6].sort_values('cal_date')['cal_date']]
+	d_range = get_dayrange(startfrom=date,num=31)
 	stocks_60['date'] = pd.to_datetime(stocks_60['date'])
 	stocks_60_sub_5_days = stocks_60[stocks_60.date.isin(d_range)].sort_values('date',ascending=False)
 	today_top_rise = {}
 	for n,g in stocks_60_sub_5_days.groupby('code'):
+		if len(g)<30:
+			continue
 		today_top_rise.setdefault(n,0)
 		try:
-			today_top_rise[n] = (g.iloc[0]['close']-g.iloc[4]['open'])/g.iloc[4]['open']
+			today_top_rise[n] = (g.iloc[0]['close']-g.iloc[5]['close'])/g.iloc[5]['close']
 		except:
 			continue
 
@@ -551,14 +552,14 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 	today_top_rise_dt = today_top_rise_dt.sort_values('p_change',ascending=False)
 	today_top_rise_dt = today_top_rise_dt.reset_index()
 	today_top_rise_dt.columns = ['code','p_change']
-	today_top_bottom = pd.concat([today_top_rise_dt[:5],today_top_rise_dt[-5:]])
+	today_top_bottom = pd.concat([today_top_rise_dt.head(5),today_top_rise_dt.tail(5)])
 	today_top_bottom = today_top_bottom.merge(all_stocks,on='code',how='left')
 	today_top_bottom['p_change_str'] = today_top_bottom['p_change'].map(lambda x: '{0:.0f}%'.format(x*100))
 
-	today_top_bottom['color'] = today_top_bottom['p_change'].map(lambda x: '#d10031' if x>0 else '#02c927')
+	today_top_bottom['color'] = today_top_bottom['p_change'].map(lambda x: '#ff5a57' if x>0 else '#54ff68')
 
 	trace = go.Table(
-	header=dict(values=list([u'号码',u'中文',u'所属行业',u'幅度']),
+	header=dict(values=list([u'号码',u'名称',u'所属行业',u'幅度']),
 	),
 	cells=dict(values=[today_top_bottom.code, today_top_bottom.name, today_top_bottom.industry,today_top_bottom.p_change_str],
 	fill = dict(color=[today_top_bottom.color])
@@ -581,10 +582,58 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 		file_name = "{}_8.png".format(date.strftime('%Y%m%d'))
 		bucket.put_object_from_file(file_name,file)
 
-def signal_gauge(conn,date=datetime.datetime.today()):
-	pro = ts.pro_api()
-	stocks_60 = pd.read_sql('select * from stocks_60_days where volume>0 where date=\'{}\''.format(date),conn)
+def signal_trend(conn,date=datetime.datetime.today(),cloud_save=False):
+	daterange = get_dayrange(startfrom=date,num=11)
+	stocks_60 = pd.read_sql('select * from stocks_60_days where volume>0',conn)
+	stocks_60['date'] = pd.to_datetime(stocks_60['date'])
+	stocks_60_sub_5_days = stocks_60[stocks_60.date.isin(daterange)]
+	signal = {}
+	for i,d in enumerate(daterange):
+		try:
+			yesterday_top_break = stocks_60_sub_5_days[(stocks_60_sub_5_days.date == daterange[i+1]) & (stocks_60_sub_5_days.islimit==1)].sort_values('code')
+			today_good_pratice = stocks_60_sub_5_days[(stocks_60_sub_5_days.date == daterange[i]) & (stocks_60_sub_5_days.code.isin(yesterday_top_break['code'].tolist()))].sort_values('code')
+			signal[d]= round(np.sum(np.where((today_good_pratice['high'].reset_index()['high']-yesterday_top_break['close'].reset_index()['close'])/yesterday_top_break['close'].reset_index()['close']>=0.08,1,0))/len(yesterday_top_break),2)
+		except:
+			pass
+
+	signal_df = pd.DataFrame.from_dict(signal,orient='index')
+	signal_df = signal_df.reset_index()
+	signal_df.columns = ['date','signal']
+	signal_df['rank'] = signal_df['signal'].map(lambda x: 0 if x<0.20 else (1 if x>=0.2 and x<0.4 else (2 if x>=0.4 and x<0.6 else (3 if x>=0.6 and x<0.8 else 4))))
+	signal_cn = {0:u'很弱',1:u'弱',2:'强',3:u'很强',4:u'超级强'}
+	signal_df = signal_df.sort_values('date')
+
 	
+
+	data = [
+    {
+        'x': ([d.strftime('%m/%d') for d in signal_df['date']]),
+        'y': [1 for d in daterange],
+        'text':signal_df['rank'].map(signal_cn),
+        'mode': 'markers+text',
+        'marker': {
+            'color':[x*5+120 for x in signal_df['rank']],
+            'size': [(x+1)*(20-2*x) for x in signal_df['rank']],
+        }
+    }
+	]
+
+	layout = dict(title=u"{} 赚钱效应".format(date.strftime("%Y/%m/%d")),
+	yaxis = dict(tick0=0, dtick=1),
+	margin=dict(l=20,r=20,b=20)
+	)
+
+	fig = go.Figure(data=data,layout=layout)
+
+	iplot(fig)
+	directory = os.path.join(home,"Documents","cnstocks")
+	file = os.path.join(home,"Documents","cnstocks","{}_10.png".format(date.strftime('%Y%m%d')))
+	if not os.path.exists(directory):
+		os.makedirs(directory)
+	pio.write_image(fig, file,scale=2)
+	if cloud_save:
+		file_name = "{}_10.png".format(date.strftime('%Y%m%d'))
+		bucket.put_object_from_file(file_name,file)
 
 
 def main():
@@ -602,6 +651,7 @@ def main():
 		top_rise_down(conn,date,True)
 		ceil_first(conn,date,True)
 		top_rise_down(conn,date,True)
+		signal_trend(conn,date,True)
 	else:
 		#performance(conn)
 		#continuous_limit_up_stocks(conn)
