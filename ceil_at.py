@@ -64,7 +64,7 @@ def ceil():
 	
 	today_all = today_all[today_all.code.isin(candidates)]
 	today_all.drop(['islimit','close'],axis=1,inplace=True)
-	today_all.reset_index().to_sql('ceiling_tick',conn,if_exists='replace',index=False)
+	today_all.reset_index().to_sql('ceiling_tick',conn,if_exists='append',index=False)
 	
 def main():
     print('Updating data...\n')
