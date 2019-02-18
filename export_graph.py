@@ -498,7 +498,7 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 		except:
 			continue
 
-		if (accumulate_change>=0.2) and (g.iloc[0:11]['p_change']>0).sum()>=8:
+		if (accumulate_change>=0.2) and (accumulate_change<=0.4) and (g.iloc[0:11]['p_change']>0).sum()>=8:
 			continuous_rise[n] = round(accumulate_change*100,2) 
 
 
