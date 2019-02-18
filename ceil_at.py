@@ -42,12 +42,13 @@ def ceil():
 		return
 
 	daterange = get_dayrange(startfrom=today,num=2)
-	yesterday_all = pd.read_sql('select * from stocks_60_days where date=\'{} 00:00:00\''.format(daterange[1].strftime('%Y-%m-%d')),conn)
+	yesterday_all = pd.read_sql('select * from stocks_60_days where date=\'{} 00:00:00\' and volume>0'.format(daterange[1].strftime('%Y-%m-%d')),conn)
 	yesterday_all = yesterday_all[['code','close']]
 	
 
 	## Start do updating
 	today_all  = ts.get_today_all()
+	today_all = today_all[today_all.volume>0]
 	today_all = today_all.merge(yesterday_all,on='code',how='left')
 	today_all['date'] = today_str
 	today_all['islimit'] = today_all['trade']>=np.round(today_all['close']*1.1,2)
@@ -63,7 +64,7 @@ def ceil():
 	
 	today_all = today_all[today_all.code.isin(candidates)]
 	today_all.drop(['islimit','close'],axis=1,inplace=True)
-	today_all.reset_index().to_sql('ceiling_tick',conn,if_exists='append',index=False)
+	today_all.reset_index().to_sql('ceiling_tick',conn,if_exists='replace',index=False)
 	
 def main():
     print('Updating data...\n')
