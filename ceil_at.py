@@ -56,9 +56,12 @@ def ceil():
 	
 	try:
 		hist = pd.read_sql('select * from ceiling_tick where date=\'{}\''.format(today.strftime('%Y-%m-%d')),conn)
-		conn.execute('delete from ceiling_tick where date=\'{}\''.format(today.strftime('%Y-%m-%d')))
-		conn.commit()
-		candidates = list(set(today_all['code'].tolist()).intersection(hist['code'].tolist())) 
+		if len(hist)>0:
+			conn.execute('delete from ceiling_tick where date=\'{}\''.format(today.strftime('%Y-%m-%d')))
+			conn.commit()
+			candidates = list(set(today_all['code'].tolist()).intersection(hist['code'].tolist()))
+		else:
+			candidates = today_all['code'].tolist()
 	except:
 		candidates = today_all['code'].tolist()
 	
