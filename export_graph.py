@@ -596,8 +596,9 @@ def signal_trend(conn,date=datetime.datetime.today(),cloud_save=False):
 	today_good_pratice = stocks_60[(stocks_60.date == daterange[0]) & (stocks_60.code.isin(yesterday_top_break['code'].tolist()))].sort_values('code')
 	signal = round(np.sum(np.where((today_good_pratice['high'].reset_index()['high']-yesterday_top_break['close'].reset_index()['close'])/yesterday_top_break['close'].reset_index()['close']>=0.08,1,0))/len(yesterday_top_break),2)
 
+	offset = (1 if len(yesterday_top_break)>=80 else (-1 if len(yesterday_top_break)<30 else 0))
 	ttfont = ImageFont.truetype("imgs/hwfs.ttf",120)
-	im = Image.open('imgs/s-0{}.png'.format(0 if signal<0.20 else (1 if signal>=0.2 and signal<0.4 else (2 if signal>=0.4 and signal<0.6 else (3 if signal>=0.6 and signal<0.8 else 4)))))
+	im = Image.open('imgs/s-0{}.png'.format(0+offset if signal<0.20 else (1+offset if signal>=0.2 and signal<0.4 else (2+offset if signal>=0.4 and signal<0.6 else (3+offset if signal>=0.6 and signal<0.8 else 4+offset)))))
 	draw = ImageDraw.Draw(im)
 	draw.text((1400,225),u'{} 赚钱效应'.format(date.strftime('%Y/%m/%d')),fill=(0,0,0),font=ttfont)
 
