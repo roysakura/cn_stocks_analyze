@@ -272,7 +272,7 @@ def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
 	cells=dict(values=[candidates.code, candidates.name,candidates.industry],
 	align = ['left'] * 5))
 
-	layout = dict(title=u"{} 一马当先".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(candidates)*25]))
+	layout = dict(title=u"{} 一马当先".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(candidates)*30]))
 
 	data = [trace]
 
@@ -594,7 +594,10 @@ def signal_trend(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	yesterday_top_break = stocks_60[(stocks_60.date == daterange[1]) & (stocks_60.islimit==1)].sort_values('code')
 	today_good_pratice = stocks_60[(stocks_60.date == daterange[0]) & (stocks_60.code.isin(yesterday_top_break['code'].tolist()))].sort_values('code')
-	signal = round(np.sum(np.where((today_good_pratice['high'].reset_index()['high']-yesterday_top_break['close'].reset_index()['close'])/yesterday_top_break['close'].reset_index()['close']>=0.08,1,0))/len(yesterday_top_break),2)
+	if len(yesterday_top_break>0):
+		signal = round(np.sum(np.where((today_good_pratice['high'].reset_index()['high']-yesterday_top_break['close'].reset_index()['close'])/yesterday_top_break['close'].reset_index()['close']>=0.08,1,0))/len(yesterday_top_break),2)
+	else:
+		signal = 0
 
 	offset = (1 if len(yesterday_top_break)>=80 else (-1 if len(yesterday_top_break)<30 else 0))
 	ttfont = ImageFont.truetype("imgs/hwfs.ttf",120)
