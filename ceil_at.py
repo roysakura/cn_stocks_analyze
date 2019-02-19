@@ -54,10 +54,13 @@ def ceil():
 	today_all['islimit'] = today_all['trade']>=np.round(today_all['close']*1.1,2)
 	today_all = today_all[today_all.islimit==True]
 	
-	hist = pd.read_sql('select * from ceiling_tick where date=\'{}\''.format(today.strftime('%Y-%m-%d')),conn)
-	conn.execute('delete from ceiling_tick where date=\'{}\''.format(today.strftime('%Y-%m-%d')))
-	conn.commit()
-	candidates = list(set(today_all['code'].tolist()).intersection(hist['code'].tolist())) 
+	try:
+		hist = pd.read_sql('select * from ceiling_tick where date=\'{}\''.format(today.strftime('%Y-%m-%d')),conn)
+		conn.execute('delete from ceiling_tick where date=\'{}\''.format(today.strftime('%Y-%m-%d')))
+		conn.commit()
+		candidates = list(set(today_all['code'].tolist()).intersection(hist['code'].tolist())) 
+	except:
+		candidates = today_all['code'].tolist()
 	
 	today_all = today_all[today_all.code.isin(candidates)]
 	today_all.drop(['islimit','close'],axis=1,inplace=True)
