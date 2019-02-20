@@ -358,7 +358,6 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	  for n,g in stocks_60_t.groupby('industry'):
 	      industry_top[d].setdefault(n,{})
 	      industry_top[d][n]['number'] = len(g[g['p_change']>=9.5])
-	      industry_top[d][n]['member'] = ','.join(g[g['p_change']>=9.5].sort_values('p_change',ascending=False)['name'].values.tolist()[:3])
 
 	industry_top_df = pd.DataFrame.from_dict({(i,j): industry_top[i][j] 
 	                         for i in industry_top.keys() 
@@ -366,7 +365,7 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	                     orient='index')
 
 	industry_top_df_ = industry_top_df.reset_index()
-	industry_top_df_.columns=['date','industry','number','member']
+	industry_top_df_.columns=['date','industry','number']
 	industry_top_df_ = industry_top_df_.sort_values(['date','number'], ascending=[False, False])
 	top_3_list = {}
 	top_3_df = []
