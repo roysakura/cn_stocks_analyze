@@ -451,35 +451,38 @@ def break_ma(conn,date=datetime.datetime.today(),cloud_save=False):
 		except:
 			continue
 
-	bt_df = pd.DataFrame(today_break_through)
-	bt_df.columns = ['code']
-	bt_df = bt_df.merge(all_stocks,on='code',how='left')
-	bt_df = bt_df.merge(stocks_60_2_days[stocks_60_2_days.date==two_days[1]],on=['code'],how='left').sort_values('p_change',ascending=False)
-	bt_df['date'] = two_days[1]
+	if len(today_break_through)>0:
+		bt_df = pd.DataFrame(today_break_through)
+		bt_df.columns = ['code']
+		bt_df = bt_df.merge(all_stocks,on='code',how='left')
+		bt_df = bt_df.merge(stocks_60_2_days[stocks_60_2_days.date==two_days[1]],on=['code'],how='left').sort_values('p_change',ascending=False)
+		bt_df['date'] = two_days[1]
 
 
-	trace = go.Table(
-	header=dict(values=list([u'号码',u'中文',u'所属行业',u'涨幅']),
-	fill = dict(color='#C2D4FF'),
-	align = ['left'] * 5),
-	cells=dict(values=[bt_df.code, bt_df.name, bt_df.industry,bt_df.p_change],
-	align = ['left'] * 5))
+		trace = go.Table(
+		header=dict(values=list([u'号码',u'中文',u'所属行业',u'涨幅']),
+		fill = dict(color='#C2D4FF'),
+		align = ['left'] * 5),
+		cells=dict(values=[bt_df.code, bt_df.name, bt_df.industry,bt_df.p_change],
+		align = ['left'] * 5))
 
-	layout = dict(title=u"{} 突破图".format(two_days[1].strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(bt_df)*25]))
+		layout = dict(title=u"{} 突破图".format(two_days[1].strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(bt_df)*25]))
 
-	data = [trace]
+		data = [trace]
 
-	fig = go.Figure(data=data,layout=layout)
+		fig = go.Figure(data=data,layout=layout)
 
-	iplot(fig)
-	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_6.png".format(date.strftime('%Y%m%d')))
-	if not os.path.exists(directory):
-		os.makedirs(directory)
-	pio.write_image(fig, file,scale=2)
-	if cloud_save:
-		file_name = "{}_6.png".format(date.strftime('%Y%m%d'))
-		bucket.put_object_from_file(file_name,file)
+		iplot(fig)
+		directory = os.path.join(home,"Documents","cnstocks")
+		file = os.path.join(home,"Documents","cnstocks","{}_6.png".format(date.strftime('%Y%m%d')))
+		if not os.path.exists(directory):
+			os.makedirs(directory)
+		pio.write_image(fig, file,scale=2)
+		if cloud_save:
+			file_name = "{}_6.png".format(date.strftime('%Y%m%d'))
+			bucket.put_object_from_file(file_name,file)
+	else:
+		return
 
 def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False):
 	continuous_rise = {}
