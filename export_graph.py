@@ -386,7 +386,7 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	font = dict(color='black'),
 	align = ['left'] * 5))
 
-	layout = dict(title=u"{} 强势板块".format(date.strftime('%Y/%m/%d'),margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(top_rds)*30]))
+	layout = dict(title=u"{} 强势板块".format(date.strftime('%Y/%m/%d')),margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(top_rds)*30]))
 
 	data = [trace]
 
