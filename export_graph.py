@@ -345,19 +345,16 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	stocks_60 = pd.read_sql('select * from stocks_60_days',conn)
 	all_stocks = pd.read_sql('select code,name,industry from all_stocks',conn)
 	stocks_60 = stocks_60.merge(all_stocks,on='code',how='left')
-	today = date
 	pro = ts.pro_api()
-	one_year_before = (today-timedelta(days=60)).strftime("%Y%m%d")
-	cal = pro.trade_cal(start_date=one_year_before, end_date=today.strftime("%Y%m%d")).sort_values('cal_date',ascending=False)
-	d_range = [datetime.datetime.strptime(d,'%Y%m%d') for d in cal[cal.is_open==1][:days_range].sort_values('cal_date')['cal_date']]
+	d_range = get_dayrange(date,num=days_range)
 	stocks_60['date'] = pd.to_datetime(stocks_60['date'])
 	industry_top = {}
 	for d in d_range:
 	  industry_top.setdefault(d,{})
-	  stocks_60_t = stocks_60[stocks_60.date==d][['code','name','p_change','industry']].sort_values('p_change',ascending=False)
+	  stocks_60_t = stocks_60[stocks_60.date.isin([d])][['code','name','islimit','industry']]
 	  for n,g in stocks_60_t.groupby('industry'):
 	      industry_top[d].setdefault(n,{})
-	      industry_top[d][n]['number'] = len(g[g['p_change']>=9.5])
+	      industry_top[d][n]['number'] = len(g[g['islimit']==True])
 
 	industry_top_df = pd.DataFrame.from_dict({(i,j): industry_top[i][j] 
 	                         for i in industry_top.keys() 
@@ -389,7 +386,7 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	font = dict(color='black'),
 	align = ['left'] * 5))
 
-	layout = dict(title=u"每日强势板块",margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(top_rds)*25]))
+	layout = dict(title=u"{} 强势板块".format(date.strftime('%Y/%m/%d'),margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(top_rds)*30]))
 
 	data = [trace]
 
@@ -413,10 +410,12 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	graph = []
 	graph.append(
-	go.Pie(labels=industry_top.index.tolist(),values=industry_top.number,textfont=dict(size=8),pull=.1,hole=.1)
+	go.Pie(labels=industry_top.index.tolist(),values=industry_top.number,textfont=dict(size=8),pull=.1,hole=.1,
+		text=industry_top.index.tolist(),textposition="inside",
+		)
 	)
 
-	layout = dict(title = u'强势行业龙虎榜')
+	layout = dict(title = u'{} 强势行业龙虎榜'.format(date.strftime('%Y/%m/%d')))
 
 	fig = go.Figure(data=graph, layout=layout)
 	iplot(fig)
