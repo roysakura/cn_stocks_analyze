@@ -12,7 +12,7 @@ import sqlite3
 from plotly.offline import init_notebook_mode,iplot
 import plotly.graph_objs as go
 import plotly.io as pio
-from stocks_update import update_data_base,is_trade_date
+from stocks_update import update_data_base,is_trade_date,post_data_process
 from export_graph import *
 from send_email import send
 
@@ -25,7 +25,7 @@ def main():
 	conn = sqlite3.connect('cn_stocks.db')
 
 	print('Updating today data...\n')
-	update_data_base()
+	#update_data_base()
 	conn.commit()
 
 	print('Exporting Graph...\n')
@@ -35,7 +35,7 @@ def main():
 	#top_break_graph(conn,today,True)
 	strong_industries(conn,today,True)
 	strong_week_graph(conn,today,True)
-	break_ma(conn,today,True)
+	#break_ma(conn,today,True)
 	continuous_rise_stocks(conn,today,True)
 	top_rise_down(conn,today,True)
 	signal_trend(conn,today,True)
@@ -43,6 +43,8 @@ def main():
 	conn.close()
 		#continuous_limit_up_stocks()
 	send()
+
+	post_data_process()
 
 if __name__ == '__main__':
 	main()

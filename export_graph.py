@@ -638,10 +638,11 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 	columnwidth=[20,30,30,20],
 	header=dict(values=list([u'号码',u'名称',u'所属行业',u'幅度']),
 	font=dict(size=[30,30,30,30]),
-	height=45
+	height=45,
+	fill = dict(color='#C2D4FF')
 	),
 	cells=dict(values=[today_top_bottom.code, today_top_bottom.name, today_top_bottom.industry,today_top_bottom.p_change_str],
-	font = dict(size=[20,30,30,20]),height=45,
+	font = dict(size=[30,30,30,30]),height=45,
 	fill=dict(color=[today_top_bottom.color])
 	)
 	)

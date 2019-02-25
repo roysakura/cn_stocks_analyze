@@ -71,40 +71,9 @@ def update_data_base():
 			df_stock['date'] = today.strftime("%Y-%m-%d")
 			df_stock['volume'] = df_stock['volume']/100.0
 			df_stock.columns = ['open','high','close','low','volume','p_change','date']
-
 			df_combine = pd.concat([current_stock.sort_values('date'),df_stock])
 			df_combine['l_close'] = df_combine['close'].shift(1)
-			df_combine['l_open'] = df_combine['open'].shift(1)
-			df_combine['l_high'] = df_combine['high'].shift(1)
-			df_combine['l_low'] = df_combine['low'].shift(1)
-			df_combine['price_change'] = np.around((df_combine['close'] - df_combine['l_close']),decimals=2)
 			df_combine['islimit'] = df_combine.apply(lambda x: 1 if (x['volume']>0 and x['l_close']>0 and x['close']>=np.around((x['l_close']*1.1),decimals=2)) else (-1 if (x['volume']>0 and x['l_close']>0 and x['close']<=np.around((x['l_close']*0.9),decimals=2)) else 0),axis=1)
-			df_combine['ma5'] = df_combine['ma5'].fillna(df_combine['close'].rolling(5).mean())
-			df_combine['max5'] = df_combine['close'].rolling(5).max()
-			df_combine['min5'] = df_combine['close'].rolling(5).min()
-			df_combine['ma10'] = df_combine['ma10'].fillna(np.around(df_combine['close'].rolling(10).mean(),decimals=2))
-			df_combine['max10'] = df_combine['close'].rolling(10).max()
-			df_combine['min10'] = df_combine['close'].rolling(10).min()
-			df_combine['ma20'] = df_combine['ma20'].fillna(np.around(df_combine['close'].rolling(20).mean(),decimals=2))
-			df_combine['max20'] = df_combine['close'].rolling(20).max()
-			df_combine['min20'] = df_combine['close'].rolling(20).min()
-			df_combine['ma30'] = np.around(df_combine['close'].rolling(30).mean(),decimals=2)
-			df_combine['max30'] = df_combine['close'].rolling(30).max()
-			df_combine['min30'] = df_combine['close'].rolling(30).min()
-			df_combine['ma60'] = np.around(df_combine['close'].rolling(60).mean(),decimals=2)
-			df_combine['max60'] = df_combine['close'].rolling(60).max()
-			df_combine['min60'] = df_combine['close'].rolling(60).min()
-			df_combine['ma120'] = np.around(df_combine['close'].rolling(120).mean(),decimals=2)
-			df_combine['max120'] = df_combine['close'].rolling(120).max()
-			df_combine['min120'] = df_combine['close'].rolling(120).min()
-
-			df_combine['v_ma5'] = df_combine['v_ma5'].fillna(np.around(df_combine['volume'].rolling(5).mean(),decimals=2))
-			df_combine['v_ma10'] = df_combine['v_ma10'].fillna(np.around(df_combine['volume'].rolling(10).mean(),decimals=2))
-			df_combine['v_ma20'] = df_combine['v_ma20'].fillna(np.around(df_combine['volume'].rolling(20).mean(),decimals=2))
-			df_combine['v_ma30'] = np.around(df_combine['volume'].rolling(30).mean(),decimals=2)
-			df_combine['v_ma60'] = np.around(df_combine['volume'].rolling(60).mean(),decimals=2)
-			df_combine['v_ma120'] = np.around(df_combine['volume'].rolling(120).mean(),decimals=2)
-
 			current_stock = df_combine.copy()
 			current_stock['date'] = pd.to_datetime(current_stock['date'])
 			current_stock['code'] = code
@@ -133,10 +102,90 @@ def update_data_base():
 	st125_df.to_sql('stocks_125_days',conn,if_exists='replace',index=False)
 
 	pbar.finish()
-	
+
+def post_data_process():
+	pro = ts.pro_api()
+	conn = sqlite3.connect('cn_stocks.db')
+	all_stocks = pd.read_sql('SELECT * from all_stocks',conn)
+	all_stocks_list = all_stocks['code'].values.tolist()
+
+	## Check if today is trade day, if not, then return
+	today = datetime.datetime.today()
+	today_str = today.strftime("%Y-%m-%d")
+	if not is_trade_date(today):
+		return
+
+	one_year_before_str = (today-timedelta(days=365)).strftime("%Y%m%d")
+	cal = pro.trade_cal(start_date=one_year_before_str, end_date=today.strftime("%Y%m%d")).sort_values('cal_date',ascending=False)
+	cal['cal_date'] = pd.to_datetime(cal['cal_date'])
+	trade_date = cal[cal.is_open==1]['cal_date']
+
+	stocks_60 	= {}
+	stocks_125 	= {}
+
+	widgets = [Bar('>'), ' ', ETA(), ' ', ReverseBar('<')]
+	pbar = ProgressBar(widgets=widgets,maxval=len(all_stocks_list)).start()
+	for i,code in enumerate(all_stocks_list):
+		try:
+			current_stock = pd.read_sql('SELECT * from \'{}\''.format(code),conn).drop_duplicates(subset=['date'])
+			current_stock['l_close'] = current_stock['close'].shift(1)
+			current_stock['l_open'] = current_stock['open'].shift(1)
+			current_stock['l_high'] = current_stock['high'].shift(1)
+			current_stock['l_low'] = current_stock['low'].shift(1)
+			current_stock['price_change'] = np.around((current_stock['close'] - current_stock['l_close']),decimals=2)
+			current_stock['ma5'] = current_stock['ma5'].fillna(current_stock['close'].rolling(5).mean())
+			current_stock['max5'] = current_stock['close'].rolling(5).max()
+			current_stock['min5'] = current_stock['close'].rolling(5).min()
+			current_stock['ma10'] = current_stock['ma10'].fillna(np.around(current_stock['close'].rolling(10).mean(),decimals=2))
+			current_stock['max10'] = current_stock['close'].rolling(10).max()
+			current_stock['min10'] = current_stock['close'].rolling(10).min()
+			current_stock['ma20'] = current_stock['ma20'].fillna(np.around(current_stock['close'].rolling(20).mean(),decimals=2))
+			current_stock['max20'] = current_stock['close'].rolling(20).max()
+			current_stock['min20'] = current_stock['close'].rolling(20).min()
+			current_stock['ma30'] = np.around(current_stock['close'].rolling(30).mean(),decimals=2)
+			current_stock['max30'] = current_stock['close'].rolling(30).max()
+			current_stock['min30'] = current_stock['close'].rolling(30).min()
+			current_stock['ma60'] = np.around(current_stock['close'].rolling(60).mean(),decimals=2)
+			current_stock['max60'] = current_stock['close'].rolling(60).max()
+			current_stock['min60'] = current_stock['close'].rolling(60).min()
+			current_stock['ma120'] = np.around(current_stock['close'].rolling(120).mean(),decimals=2)
+			current_stock['max120'] = current_stock['close'].rolling(120).max()
+			current_stock['min120'] = current_stock['close'].rolling(120).min()
+			current_stock['v_ma5'] = current_stock['v_ma5'].fillna(np.around(current_stock['volume'].rolling(5).mean(),decimals=2))
+			current_stock['v_ma10'] = current_stock['v_ma10'].fillna(np.around(current_stock['volume'].rolling(10).mean(),decimals=2))
+			current_stock['v_ma20'] = current_stock['v_ma20'].fillna(np.around(current_stock['volume'].rolling(20).mean(),decimals=2))
+			current_stock['v_ma30'] = np.around(current_stock['volume'].rolling(30).mean(),decimals=2)
+			current_stock['v_ma60'] = np.around(current_stock['volume'].rolling(60).mean(),decimals=2)
+			current_stock['v_ma120'] = np.around(current_stock['volume'].rolling(120).mean(),decimals=2)
+
+			current_stock.to_sql(code,conn,if_exists='replace',index=False)
+
+			current_stock['date'] = pd.to_datetime(current_stock['date'])
+			current_stock['code'] = code
+			current_stock = current_stock.drop_duplicates()
+			mask_60 = (current_stock['date']>trade_date.iloc[60]) & (current_stock['date']<=trade_date.iloc[0])
+			stocks_60[code]= current_stock.loc[mask_60]
+			mask_125 = (current_stock['date']>trade_date.iloc[125]) & (current_stock['date']<=trade_date.iloc[0])
+			stocks_125[code]= current_stock.loc[mask_125]
+
+		except Exception as e:
+			print(e)
+			continue
+
+		pbar.update(i + 1)
+
+	st60_df = pd.concat(stocks_60)
+	st60_df.to_sql('stocks_60_days',conn,if_exists='replace',index=False)
+	st125_df = pd.concat(stocks_125)
+	st125_df.to_sql('stocks_125_days',conn,if_exists='replace',index=False)
+
+	pbar.finish()
+
+
 def main():
     print('Updating today data...\n')
     update_data_base()
+    post_data_process()
     
 if __name__ == '__main__':
     main()
