@@ -37,9 +37,11 @@ def combine_title(title_name,file):
 	new_im.save(file)
 
 def frange(x, y, jump):
+	l = []
 	while x < y:
-		yield x
+		l.append(x)
 		x += jump
+	return l
 
 #Return numbers of trade day date list.
 def get_dayrange(startfrom,num=5):
@@ -53,12 +55,12 @@ def get_dayrange(startfrom,num=5):
 
 def performance(conn,date=datetime.datetime.today(),cloud_save=False):
 	## First chart for over all performance
-	title_desc = {frange(-11,-4,0.1):u'扑街',
-				  frange(-4,-2,0.1):u'很差',
-				  frange(-2,-0,0.1):u'差',
-				  frange(0,2,0.1):u'好',
-				  frange(2,4,0.1):u'很好',
-				  frange(4,11,0.1):u'劲抽',}
+	title_desc = {u'扑街':frange(-11,-4,0.1),
+				  u'很差':frange(-4,-2,0.1),
+				  u'差':frange(-2,-0,0.1),
+				  u'好':frange(0,2,0.1),
+				  u'很好':frange(2,4,0.1),
+				  u'劲抽':frange(4,11,0.1),}
 
 	today_all_changepercent_over_0 =pd.read_sql('select p_change from stocks_60_days where volume>0 and p_change<11 and p_change>0 and date=\'{}\''.format(date),conn)
 	hist_data_today_all_changepercent_over_0 = np.histogram(today_all_changepercent_over_0['p_change'],bins=10,range=(0,11))
@@ -100,8 +102,8 @@ def performance(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	title=''
 	for key,item in title_desc.items():
-		if round(hist_data_today[1][np.argmax(hist_data_today[0])],1) in key:
-			title = u'{}市场表现{}'.format(date.strftime('%Y/%m/%d'),item)
+		if round(hist_data_today[1][np.argmax(hist_data_today[0])],1) in [round(x,1) for x in item]:
+			title = u'{}市场表现{}'.format(date.strftime('%Y/%m/%d'),key)
 
 	layout_one = dict(title = title,
 	        xaxis=go.layout.XAxis(title=u'幅度',ticktext=labels,tickvals=tickvals),
@@ -303,7 +305,8 @@ def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
 	fill = dict(color='#C2D4FF'),
 	font=dict(size=[30,30,30]),height=45),
 	cells=dict(values=[candidates.code, candidates.name,candidates.industry]
-	,font=dict(size=[30,30,30]),height=45))
+	,font=dict(size=[30,30,30]),height=45,
+	fill=dict(color='#66aaff')))
 
 	layout = dict(title=u"({}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负)".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=100),height=len(candidates)*45+220)
 
@@ -437,11 +440,13 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	height=45))
 
 	#Top 5 
-	c = dict( Counter(top_rds[:6]['industry']))
-	industry_top = pd.DataFrame.from_dict(c,orient='index')
-	industry_top.columns = ['number']
-	industry_top = industry_top.sort_values('number',ascending=False)
+	group_industry = {}
+	for n,g in top_rds.groupby('industry'):
+		group_industry[n]=len(g)
 
+	industry_top = pd.DataFrame.from_dict(group_industry,orient='index')
+	industry_top.columns = ['number']
+	industry_top.sort_values('number',ascending=False,inplace=True)
 
 	title = u'今天({})最强板块是{}，近一周的连续强势板块{}'.format(date.strftime('%Y/%m/%d'),top_rds.iloc[0]['industry'],industry_top.index.tolist()[0])
 
@@ -470,7 +475,7 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 		)
 	)
 
-	layout = dict(title = u'({})近期强势板块比例'.format(date.strftime('%Y/%m/%d')))
+	layout = dict(title = u'({})近期强势板块比例'.format(date.strftime('%Y/%m/%d')),showlegend=False)
 
 	fig = go.Figure(data=graph, layout=layout)
 	iplot(fig)
@@ -672,8 +677,11 @@ def signal_trend(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	yesterday_top_break = stocks_60[(stocks_60.date == daterange[1]) & (stocks_60.islimit==1)].sort_values('code')
 	today_good_pratice = stocks_60[(stocks_60.date == daterange[0]) & (stocks_60.code.isin(yesterday_top_break['code'].tolist()))].sort_values('code')
+	yesterday_top_break = yesterday_top_break[['code','close']]
+	today_good_pratice = today_good_pratice[['code','high']]
+	combine_df = today_good_pratice.merge(yesterday_top_break,on='code',how='left')
 	if len(yesterday_top_break>0):
-		signal = round(np.sum(np.where((today_good_pratice['high'].reset_index()['high']-yesterday_top_break['close'].reset_index()['close'])/yesterday_top_break['close'].reset_index()['close']>=0.08,1,0))/len(yesterday_top_break),2)
+		signal = round(np.sum(np.where(((combine_df['high']-combine_df['close'])/combine_df['close'])>=0.08,1,0))/len(yesterday_top_break),2)
 	else:
 		signal = 0
 
