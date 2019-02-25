@@ -46,9 +46,9 @@ def send(date=datetime.datetime.today()):
     outer.preamble = 'You will not see this in a MIME-aware mail reader.\n'
 
     # List of attachments
-    attachments = [settings.GRAPH['PERFORMANCE_1'],settings.GRAPH['PERFORMANCE_2'],settings.GRAPH['LEAD_LIMIT']
-                    ,settings.GRAPH['CONTINUOUS_LIMIT'],settings.GRAPH['STRONG_INDUSTRIES_1'],settings.GRAPH['STRONG_INDUSTRIES_2']
-                    ,settings.GRAPH['CONTINUOUSE_RISE'],settings.GRAPH['RANKING_1'],settings.GRAPH['GAUGE_1']]
+    attachments = [settings.GRAPH['PERFORMANCE_1'],settings.GRAPH['PERFORMANCE_2'],settings.GRAPH['STRONG_INDUSTRIES_1']
+                    ,settings.GRAPH['STRONG_INDUSTRIES_2'],settings.GRAPH['LEAD_LIMIT'],settings.GRAPH['RANKING_1']
+                    ,settings.GRAPH['CONTINUOUSE_RISE'],settings.GRAPH['CONTINUOUS_LIMIT'],settings.GRAPH['GAUGE_1']]
     combine_files = []
     for i in attachments:
         file = os.path.join(home,"Documents","{}.jpg".format(i))

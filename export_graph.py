@@ -581,7 +581,7 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 	fill = dict(color='#C2D4FF'),
 	font=dict(size=(30,30,30,30)),height=45),
 	cells=dict(values=[continuous_rise_candidate_df.code, continuous_rise_candidate_df.name, continuous_rise_candidate_df.industry,continuous_rise_candidate_df.p_change_str],
-	font=dict(size=[30,30,30,30]),height=45,fill = dict(color='#ff95ef'),),
+	font=dict(size=[30,30,30,30]),height=45,fill = dict(color='#66aaff'),),
 	)
 
 	layout = dict(title=u"({})此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=100),height=len(continuous_rise_candidate_df)*45+220)
@@ -636,7 +636,8 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 	height=45
 	),
 	cells=dict(values=[today_top_bottom.code, today_top_bottom.name, today_top_bottom.industry,today_top_bottom.p_change_str],
-	font = dict(size=[20,30,30,20],color=[today_top_bottom.color]),height=45
+	font = dict(size=[20,30,30,20]),height=45,
+	fill=dict(color=[today_top_bottom.color])
 	)
 	)
 
@@ -702,16 +703,15 @@ def main():
 		date = sys.argv[1:]
 		date = datetime.datetime.strptime(date[0], '%Y-%m-%d')
 		print('Exporting Graph For Date {}...\n'.format(date))
-		performance(conn,date,True)
-		continuous_limit_up_stocks(conn,date,True)
-		strong_industries(conn,date,True)
-		strong_week_graph(conn,date,True)
-		break_ma(conn,date,True)
-		continuous_rise_stocks(conn,date,True)
-		top_rise_down(conn,date,True)
-		ceil_first(conn,date,True)
-		top_rise_down(conn,date,True)
-		signal_trend(conn,date,True)
+		performance(conn,date)
+		continuous_limit_up_stocks(conn,date)
+		strong_industries(conn,date)
+		strong_week_graph(conn,date)
+		break_ma(conn,date)
+		continuous_rise_stocks(conn,date)
+		top_rise_down(conn,date)
+		ceil_first(conn,date)
+		signal_trend(conn,date)
 	else:
 		#performance(conn)
 		#continuous_limit_up_stocks(conn)
