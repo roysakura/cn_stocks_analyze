@@ -30,6 +30,16 @@ bucket = oss2.Bucket(auth, endpoint, 'cnstock')
 
 home = expanduser("~")
 #home = str(Path.home())
+def combine_title(title_name,file):
+	new_im = Image.open(file)
+	title_tmp = Image.open('imgs/{}'.format(title_name))
+	new_im.paste(title_tmp,(0,0),0)
+	new_im.save(file)
+
+def frange(x, y, jump):
+	while x < y:
+		yield x
+		x += jump
 
 #Return numbers of trade day date list.
 def get_dayrange(startfrom,num=5):
@@ -43,10 +53,20 @@ def get_dayrange(startfrom,num=5):
 
 def performance(conn,date=datetime.datetime.today(),cloud_save=False):
 	## First chart for over all performance
-	today_all_changepercent_over_0 =pd.read_sql('select p_change from stocks_125_days where volume>0 and p_change<11 and p_change>0 and date=\'{}\''.format(date),conn)
+	title_desc = {frange(-11,-4,0.1):u'扑街',
+				  frange(-4,-2,0.1):u'很差',
+				  frange(-2,-0,0.1):u'差',
+				  frange(0,2,0.1):u'好',
+				  frange(2,4,0.1):u'很好',
+				  frange(4,11,0.1):u'劲抽',}
+
+	today_all_changepercent_over_0 =pd.read_sql('select p_change from stocks_60_days where volume>0 and p_change<11 and p_change>0 and date=\'{}\''.format(date),conn)
 	hist_data_today_all_changepercent_over_0 = np.histogram(today_all_changepercent_over_0['p_change'],bins=10,range=(0,11))
-	today_all_changepercent_less_0 =pd.read_sql('select p_change from stocks_125_days where volume>0 and p_change>-11 and p_change<0 and date=\'{}\''.format(date),conn)
+	today_all_changepercent_less_0 =pd.read_sql('select p_change from stocks_60_days where volume>0 and p_change>-11 and p_change<0 and date=\'{}\''.format(date),conn)
 	hist_data_today_all_changepercent_less_0 = np.histogram(today_all_changepercent_less_0['p_change'],bins=10,range=(-10.5,0))
+
+	data_today = pd.read_sql('select p_change from stocks_60_days where volume>0 and date=\'{}\''.format(date),conn)
+	hist_data_today = np.histogram(data_today['p_change'],bins=20,range=(-10.5,11))
 
 	graph_one = []
 	graph_one.append(
@@ -77,7 +97,13 @@ def performance(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	labels = [str(s)+'%' for s in range(-10,11)]
 	tickvals = [s for s in range(-10,11)]
-	layout_one = dict(title = u'{} 市场表现'.format(date.strftime('%Y/%m/%d')),
+
+	title=''
+	for key,item in title_desc.items():
+		if round(hist_data_today[1][np.argmax(hist_data_today[0])],1) in key:
+			title = u'{}市场表现{}'.format(date.strftime('%Y/%m/%d'),item)
+
+	layout_one = dict(title = title,
 	        xaxis=go.layout.XAxis(title=u'幅度',ticktext=labels,tickvals=tickvals),
 	        yaxis = dict(title = '数量',tick0=0, dtick=100))
 
@@ -85,12 +111,13 @@ def performance(conn,date=datetime.datetime.today(),cloud_save=False):
 	iplot(fig)
 
 	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_0.png".format(date.strftime('%Y%m%d')))
+	file = os.path.join(home,"Documents","cnstocks","{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['PERFORMANCE_1']))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	pio.write_image(fig,file,scale=2)
+	combine_title(str(settings.GRAPH['PERFORMANCE_1'])+'_title.png',file)
 	if cloud_save:
-		file_name = "{}_0.png".format(date.strftime('%Y%m%d'))
+		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['PERFORMANCE_1'])
 		bucket.put_object_from_file(file_name,file)
 
 def strong_week_graph(conn,date=datetime.datetime.today(),cloud_save=False):
@@ -143,20 +170,24 @@ def strong_week_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	labels = [d[:-9] for d in data['index']]
 	tickvals = data.index
+	title_sub1 = u'追涨' if (data.iloc[0]['over_5%'] > data.iloc[0]['less_5%']) else u'杀跌'
+	title_sub2 = u'暴涨' if (np.sum(data['over_5%']) > np.sum(data['less_5%'])) else u'暴跌'
+	title = u'今天({}){}的气氛更浓,纵观近期市场,{}个股总数更多.'.format(date.strftime('%Y%m%d'),title_sub1,title_sub2)
 
-	layout_two = dict(title = u'市场表现二',
+	layout_two = dict(title = title,
 	yaxis=go.layout.YAxis(ticktext=labels,tickvals=tickvals),
 	xaxis = dict(title = '数量',tick0=0, dtick=100),
 	)
 	fig = go.Figure(data=graph_two, layout=layout_two)
 	iplot(fig)
 	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_1.png".format(date.strftime('%Y%m%d')))
+	file = os.path.join(home,"Documents","cnstocks","{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['PERFORMANCE_2']))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	pio.write_image(fig, file, scale=2)
+	combine_title(str(settings.GRAPH['PERFORMANCE_2'])+'_title.png',file)
 	if cloud_save:
-		file_name = "{}_1.png".format(date.strftime('%Y%m%d'))
+		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['PERFORMANCE_2'])
 		bucket.put_object_from_file(file_name,file)
 
 def top_break_graph(conn,date=datetime.datetime.today(),cloud_save=False):
@@ -235,12 +266,13 @@ def top_break_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 	fig = go.Figure(data=graph_three, layout=layout_three)
 	iplot(fig)
 	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_9.png".format(date.strftime('%Y%m%d')))
+	file = os.path.join(home,"Documents","cnstocks","{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['PERFORMANCE_3']))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
+	combine_title(str(settings.GRAPH['PERFORMANCE_3'])+'_title.png',file)
 	if cloud_save:
-		file_name = "{}_9.png".format(date.strftime('%Y%m%d'))
+		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['PERFORMANCE_3'])
 		bucket.put_object_from_file(file_name,file)
 
 # check if it's ceiling at certain time
@@ -266,13 +298,14 @@ def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
 	candidates = candidates[~candidates.code.isin(ipo)]
 
 	trace = go.Table(
+	columnwidth=[20,30,30],
 	header=dict(values=list([u'代码',u'名称',u'所属行业',]),
 	fill = dict(color='#C2D4FF'),
-	align = ['left'] * 5),
-	cells=dict(values=[candidates.code, candidates.name,candidates.industry],
-	align = ['left'] * 5))
+	font=dict(size=[30,30,30]),height=45),
+	cells=dict(values=[candidates.code, candidates.name,candidates.industry]
+	,font=dict(size=[30,30,30]),height=45))
 
-	layout = dict(title=u"{} 一马当先".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(candidates)*30]))
+	layout = dict(title=u"({}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负)".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=100),height=len(candidates)*45+220)
 
 	data = [trace]
 
@@ -280,16 +313,23 @@ def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	iplot(fig)
 	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_2.png".format(date.strftime('%Y%m%d')))
+	file = os.path.join(home,"Documents","cnstocks","{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['LEAD_LIMIT']))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
+	combine_title(str(settings.GRAPH['LEAD_LIMIT'])+'_title.png',file)
 	if cloud_save:
-		file_name = "{}_2.png".format(date.strftime('%Y%m%d'))
+		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['LEAD_LIMIT'])
 		bucket.put_object_from_file(file_name,file)
 
 
 def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=False):
+	title_desc = {range(0,1):u'市场人气太差,游资不敢接力连板',
+				  range(1,11):u'市场有点人气,游资开始接力连板',
+				  range(11,31):u'市场人气强劲,游资积极接力连板',
+				  range(31,61):u'无脑打连板的人太多,游资和机构接力连板',
+				  range(61,1000):u'人气爆棚,全民接力连板,股市的盛宴'}
+
 	all_stocks =pd.read_sql('select code,name,industry from all_stocks',conn).set_index('code')
 	today_limit_up_code =pd.read_sql('select code from stocks_60_days where islimit=1 and date=\'{}\''.format(date),conn)
 	stock_limit_up_record = {}
@@ -316,15 +356,22 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 	limit_up_combined['color'] = limit_up_combined['freq'].map(lambda x: colors[x] if x<=8 else colors[8])
 
 	trace = go.Table(
+	columnwidth = [12,20,12,20],
 	header=dict(values=list([u'代码',u'名称',u'连板次数',u'所属行业',]),
 	fill = dict(color='#C2D4FF'),
-	align = ['left'] * 5),
+	font = dict(size=[30,30,30,30]),height=45),
 	cells=dict(values=[limit_up_combined.code, limit_up_combined.name, limit_up_combined.freq, limit_up_combined.industry],
 	fill = dict(color=[limit_up_combined.color]),
-	font = dict(color='black'),
-	align = ['left'] * 5))
+	font = dict(color='black',size=[30,30,30,30]),
+	height=45,))
 
-	layout = dict(title=u"{} 连板统计".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(limit_up_combined)*25]))
+	title = u"{} 连板统计".format(date.strftime("%Y/%m/%d"))
+
+	for key,item in title_desc.items():
+		if len(limit_up_combined) in key:
+			title = u"{} {}".format(date.strftime("%Y/%m/%d"),item)
+
+	layout = dict(font=dict(size=20),title=title,margin=dict(l=0,r=0,b=0,t=100),height=len(limit_up_combined)*45+220)
 
 	data = [trace]
 
@@ -332,12 +379,13 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 
 	iplot(fig)
 	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_3.png".format(date.strftime('%Y%m%d')))
+	file = os.path.join(home,"Documents","cnstocks","{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['CONTINUOUS_LIMIT']))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
+	combine_title(str(settings.GRAPH['CONTINUOUS_LIMIT'])+'_title.png',file)
 	if cloud_save:
-		file_name = "{}_3.png".format(date.strftime('%Y%m%d'))
+		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['CONTINUOUS_LIMIT'])
 		bucket.put_object_from_file(file_name,file)
 
 def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
@@ -378,29 +426,15 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	top_rds['color'] = LabelEncoder().fit_transform(top_rds['date'])
 	top_rds['color'] = top_rds['color'].map(lambda x:colors[x])
 	trace = go.Table(
+	columnwidth=[12,20,8],
 	header=dict(values=list([u'日期',u'所属行业',u'涨停个股',]),
 	fill = dict(color='#C2D4FF'),
-	align = ['left'] * 5),
+	font=dict(size=[30,30,30]),
+	height=45),
 	cells=dict(values=[top_rds.date, top_rds.industry, top_rds.number],
 	fill = dict(color=[top_rds.color]),
-	font = dict(color='black'),
-	align = ['left'] * 5))
-
-	layout = dict(title=u"{} 强势板块".format(date.strftime('%Y/%m/%d')),margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(top_rds)*30]))
-
-	data = [trace]
-
-	fig = go.Figure(data=data,layout=layout)
-
-	iplot(fig)
-	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_4.png".format(date.strftime('%Y%m%d')))
-	if not os.path.exists(directory):
-		os.makedirs(directory)
-	pio.write_image(fig, file,scale=2)
-	if cloud_save:
-		file_name = "{}_4.png".format(date.strftime('%Y%m%d'))
-		bucket.put_object_from_file(file_name,file)
+	font = dict(color='black',size=[30,30,30]),
+	height=45))
 
 	#Top 5 
 	c = dict( Counter(top_rds[:6]['industry']))
@@ -408,24 +442,46 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	industry_top.columns = ['number']
 	industry_top = industry_top.sort_values('number',ascending=False)
 
+
+	title = u'今天({})最强板块是{}，近一周的连续强势板块{}'.format(date.strftime('%Y/%m/%d'),top_rds.iloc[0]['industry'],industry_top.index.tolist()[0])
+
+	layout = dict(font=dict(size=15),title=title,margin=dict(l=0,r=0,b=0,t=100),height=len(top_rds)*45+220)
+
+	data = [trace]
+
+	fig = go.Figure(data=data,layout=layout)
+
+	iplot(fig)
+	directory = os.path.join(home,"Documents","cnstocks")
+	file = os.path.join(home,"Documents","cnstocks","{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['STRONG_INDUSTRIES_1']))
+	if not os.path.exists(directory):
+		os.makedirs(directory)
+	pio.write_image(fig, file,scale=2)
+	combine_title(str(settings.GRAPH['STRONG_INDUSTRIES_1'])+'_title.png',file)
+	if cloud_save:
+		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['STRONG_INDUSTRIES_1'])
+		bucket.put_object_from_file(file_name,file)
+
+
 	graph = []
 	graph.append(
-	go.Pie(labels=industry_top.index.tolist(),values=industry_top.number,textfont=dict(size=8),pull=.1,hole=.1,
+	go.Pie(labels=industry_top.index.tolist(),values=industry_top.number,textfont=dict(size=20),pull=.2,hole=.1,
 		text=industry_top.index.tolist(),textposition="inside",
 		)
 	)
 
-	layout = dict(title = u'{} 强势行业龙虎榜'.format(date.strftime('%Y/%m/%d')))
+	layout = dict(title = u'({})近期强势板块比例'.format(date.strftime('%Y/%m/%d')))
 
 	fig = go.Figure(data=graph, layout=layout)
 	iplot(fig)
 	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_5.png".format(date.strftime('%Y%m%d')))
+	file = os.path.join(home,"Documents","cnstocks","{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['STRONG_INDUSTRIES_2']))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
+	combine_title(str(settings.GRAPH['STRONG_INDUSTRIES_2'])+'_title.png',file)
 	if cloud_save:
-		file_name = "{}_5.png".format(date.strftime('%Y%m%d'))
+		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['STRONG_INDUSTRIES_2'])
 		bucket.put_object_from_file(file_name,file)
 
 	#return top_rds.to_json(orient='index')
@@ -455,16 +511,20 @@ def break_ma(conn,date=datetime.datetime.today(),cloud_save=False):
 		bt_df = bt_df.merge(all_stocks,on='code',how='left')
 		bt_df = bt_df.merge(stocks_60_2_days[stocks_60_2_days.date==two_days[1]],on=['code'],how='left').sort_values('p_change',ascending=False)
 		bt_df['date'] = two_days[1]
-
+		bt_df['p_change_str'] = bt_df['p_change'].map(lambda x: '{}%'.format(round(x,2)))
 
 		trace = go.Table(
+		columnwidth=[12,30,30,10],
 		header=dict(values=list([u'号码',u'中文',u'所属行业',u'涨幅']),
 		fill = dict(color='#C2D4FF'),
-		align = ['left'] * 5),
-		cells=dict(values=[bt_df.code, bt_df.name, bt_df.industry,bt_df.p_change],
-		align = ['left'] * 5))
+		font=dict(size=[30,30,30,30]),
+		height=45),
+		cells=dict(values=[bt_df.code, bt_df.name, bt_df.industry,bt_df.p_change_str],
+		font=dict(size=[30,30,30,30]),
+		height=45)
+		)
 
-		layout = dict(title=u"{} 突破图".format(two_days[1].strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(bt_df)*25]))
+		layout = dict(font=dict(size=20),title=u"{} 突破图".format(two_days[1].strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=100),height=len(bt_df)*45+220)
 
 		data = [trace]
 
@@ -472,12 +532,13 @@ def break_ma(conn,date=datetime.datetime.today(),cloud_save=False):
 
 		iplot(fig)
 		directory = os.path.join(home,"Documents","cnstocks")
-		file = os.path.join(home,"Documents","cnstocks","{}_6.png".format(date.strftime('%Y%m%d')))
+		file = os.path.join(home,"Documents","cnstocks","{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['BREAK_THROUGH']))
 		if not os.path.exists(directory):
 			os.makedirs(directory)
 		pio.write_image(fig, file,scale=2)
+		combine_title(str(settings.GRAPH['BREAK_THROUGH'])+'_title.png',file)
 		if cloud_save:
-			file_name = "{}_6.png".format(date.strftime('%Y%m%d'))
+			file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['BREAK_THROUGH'])
 			bucket.put_object_from_file(file_name,file)
 	else:
 		return
@@ -509,17 +570,21 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 	continuous_rise_candidate_df.columns = ['code','accumulate']
 	continuous_rise_candidate_df = continuous_rise_candidate_df.merge(stocks_60[stocks_60.date==daterange[0]],on='code',how='left')
 	continuous_rise_candidate_df['accumulate'] = continuous_rise_candidate_df['accumulate'].map(lambda x: '{}%'.format(x))
-	continuous_rise_candidate_df['p_change'] = continuous_rise_candidate_df['p_change'].map(lambda x: '{}%'.format(round(x,2)))
+	continuous_rise_candidate_df['p_change_str'] = continuous_rise_candidate_df['p_change'].map(lambda x: '{}%'.format(round(x,2)))
 	continuous_rise_candidate_df = continuous_rise_candidate_df.merge(all_stocks,on='code',how='left')
 	continuous_rise_candidate_df = continuous_rise_candidate_df.head(10)
+	#continuous_rise_candidate_df['color'] = continuous_rise_candidate_df['p_change'].map(lambda x: '#ff5a57' if x>0 else '#54ff68')
 
 	trace = go.Table(
+	columnwidth=[20,30,30,20],
 	header=dict(values=list([u'号码',u'名称',u'所属行业',u'今日涨幅']),
-	fill = dict(color='#C2D4FF')),
-	cells=dict(values=[continuous_rise_candidate_df.code, continuous_rise_candidate_df.name, continuous_rise_candidate_df.industry,continuous_rise_candidate_df.p_change]),
+	fill = dict(color='#C2D4FF'),
+	font=dict(size=(30,30,30,30)),height=45),
+	cells=dict(values=[continuous_rise_candidate_df.code, continuous_rise_candidate_df.name, continuous_rise_candidate_df.industry,continuous_rise_candidate_df.p_change_str],
+	font=dict(size=[30,30,30,30]),height=45,fill = dict(color='#ff95ef'),),
 	)
 
-	layout = dict(title=u"{} 步步高升".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(continuous_rise_candidate_df)*25]))
+	layout = dict(title=u"({})此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=100),height=len(continuous_rise_candidate_df)*45+220)
 
 	data = [trace]
 
@@ -527,12 +592,13 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 
 	iplot(fig)
 	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_7.png".format(date.strftime('%Y%m%d')))
+	file = os.path.join(home,"Documents","cnstocks","{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['CONTINUOUSE_RISE']))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	pio.write_image(fig,file,scale=2)
+	combine_title(str(settings.GRAPH['CONTINUOUSE_RISE'])+'_title.png',file)
 	if cloud_save:
-		file_name = "{}_7.png".format(date.strftime('%Y%m%d'))
+		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['CONTINUOUSE_RISE'])
 		bucket.put_object_from_file(file_name,file)
 
 def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
@@ -564,14 +630,17 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 	today_top_bottom['color'] = today_top_bottom['p_change'].map(lambda x: '#ff5a57' if x>0 else '#54ff68')
 
 	trace = go.Table(
+	columnwidth=[20,30,30,20],
 	header=dict(values=list([u'号码',u'名称',u'所属行业',u'幅度']),
+	font=dict(size=[30,30,30,30]),
+	height=45
 	),
 	cells=dict(values=[today_top_bottom.code, today_top_bottom.name, today_top_bottom.industry,today_top_bottom.p_change_str],
-	fill = dict(color=[today_top_bottom.color])
+	font = dict(size=[20,30,30,20],color=[today_top_bottom.color]),height=45
 	)
 	)
 
-	layout = dict(title=u"{} 五天涨跌幅排行榜".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=50),height=max([300,len(today_top_bottom)*25]))
+	layout = dict(title=u"({})此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=100),height=len(today_top_bottom)*45+220)
 
 	data = [trace]
 
@@ -579,15 +648,22 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	iplot(fig)
 	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_8.png".format(date.strftime('%Y%m%d')))
+	file = os.path.join(home,"Documents","cnstocks","{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['RANKING_1']))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
+	combine_title(str(settings.GRAPH['RANKING_1'])+'_title.png',file)
 	if cloud_save:
-		file_name = "{}_8.png".format(date.strftime('%Y%m%d'))
+		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['RANKING_1'])
 		bucket.put_object_from_file(file_name,file)
 
 def signal_trend(conn,date=datetime.datetime.today(),cloud_save=False):
+	title_desc = {0:[u'很弱',u'减至最低,只保留20%以下仓位'],
+				  1:[u'弱',u'减少,保留40%以下仓位'],
+				  2:[u'强',u'提高,保留60%左右仓位'],
+				  3:[u'很强',u'大幅提高,加至80%左右仓位甚至满仓'],
+				  4:[u'超级强',u'提高到极限,满仓是必须的,轻仓是在犯罪']}
+
 	daterange = get_dayrange(startfrom=date,num=1)
 	stocks_60 = pd.read_sql('select * from stocks_60_days where volume>0',conn)
 	stocks_60['date'] = pd.to_datetime(stocks_60['date'])
@@ -601,18 +677,22 @@ def signal_trend(conn,date=datetime.datetime.today(),cloud_save=False):
 		signal = 0
 
 	offset = (1 if len(yesterday_top_break)>=80 else (-1 if len(yesterday_top_break)<30 else 0))
-	ttfont = ImageFont.truetype("imgs/hwfs.ttf",120)
-	im = Image.open('imgs/s-0{}.png'.format(0+offset if signal<0.20 else (1+offset if signal>=0.2 and signal<0.4 else (2+offset if signal>=0.4 and signal<0.6 else (3+offset if signal>=0.6 and signal<0.8 else 4+offset)))))
+	score = (0+offset if signal<0.20 else (1+offset if signal>=0.2 and signal<0.4 else (2+offset if signal>=0.4 and signal<0.6 else (3+offset if signal>=0.6 and signal<0.8 else 4+offset))))
+	score =  0 if score<0 else (4 if score>4 else score)
+	ttfont = ImageFont.truetype("imgs/SIMHEI.TTF",35)
+	im = Image.open('imgs/s-0{}.jpg'.format(score))
 	draw = ImageDraw.Draw(im)
-	draw.text((1400,225),u'{} 赚钱效应'.format(date.strftime('%Y/%m/%d')),fill=(0,0,0),font=ttfont)
+	title = u'今天{}赚钱效应{}, 仓位应{}'.format(date.strftime('%Y/%m/%d'),title_desc[score][0],title_desc[score][1])
+	draw.text((120,100),title,fill=(0,0,0),font=ttfont)
 
 	directory = os.path.join(home,"Documents","cnstocks")
-	file = os.path.join(home,"Documents","cnstocks","{}_10.png".format(date.strftime('%Y%m%d')))
+	file = os.path.join(home,"Documents","cnstocks","{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['GAUGE_1']))
 	if not os.path.exists(directory):
 		os.makedirs(directory)
 	im.save(file)
+	combine_title(str(settings.GRAPH['GAUGE_1'])+'_title.png',file)
 	if cloud_save:
-		file_name = "{}_10.png".format(date.strftime('%Y%m%d'))
+		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['GAUGE_1'])
 		bucket.put_object_from_file(file_name,file)
 
 

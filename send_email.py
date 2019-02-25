@@ -21,6 +21,9 @@ import datetime
 import oss2
 from os.path import expanduser
 
+import sys
+from PIL import Image
+
 
 endpoint = 'http://oss-cn-shenzhen.aliyuncs.com' # Suppose that your bucket is in the Hangzhou region.
 image_domain ="http://news-material.oss-cn-shenzhen.aliyuncs.com/"
@@ -29,12 +32,12 @@ bucket = oss2.Bucket(auth, endpoint, 'cnstock')
 home = expanduser("~")
 COMMASPACE = ', '
 
-def send():
-    today = (datetime.datetime.today()).strftime('%Y%m%d')
+def send(date=datetime.datetime.today()):
+    today = date.strftime('%Y%m%d')
     sender = '110672023@qq.com'
     gmail_password = 'cflgbqogaggmbibb'
     recipients = ['110672023@qq.com','150096055@qq.com']
-    
+
     # Create the enclosing (outer) message
     outer = MIMEMultipart()
     outer['Subject'] = u'{}分析'.format(today)
@@ -43,24 +46,30 @@ def send():
     outer.preamble = 'You will not see this in a MIME-aware mail reader.\n'
 
     # List of attachments
-    attachments = range(0,11)
+    attachments = [settings.GRAPH['PERFORMANCE_1'],settings.GRAPH['PERFORMANCE_2'],settings.GRAPH['LEAD_LIMIT']
+                    ,settings.GRAPH['CONTINUOUS_LIMIT'],settings.GRAPH['STRONG_INDUSTRIES_1'],settings.GRAPH['STRONG_INDUSTRIES_2']
+                    ,settings.GRAPH['CONTINUOUSE_RISE'],settings.GRAPH['RANKING_1'],settings.GRAPH['GAUGE_1']]
+    combine_files = []
     for i in attachments:
-        file = os.path.join(home,"Documents","{}.png".format(i))
+        file = os.path.join(home,"Documents","{}.jpg".format(i))
         try:
-            result = bucket.get_object_to_file('{}_{}.png'.format(today,i), file)
+            result = bucket.get_object_to_file('{}_{}.jpg'.format(today,i), file)
+            combine_files.append(file)
         except:
             continue
 
-        try:
-            with open(file, 'rb') as fp:
-                msg = MIMEBase('application', "octet-stream")
-                msg.set_payload(fp.read())
+    combine(date,combine_files)       
+    final_file = os.path.join(home,"Documents","{}_combine.jpg".format(today))
+    try:
+        with open(final_file, 'rb') as fp:
+            msg = MIMEBase('application', "octet-stream")
+            msg.set_payload(fp.read())
             encoders.encode_base64(msg)
-            msg.add_header('Content-Disposition', 'attachment', filename=os.path.basename(file))
+            msg.add_header('Content-Disposition', 'attachment', filename=os.path.basename(final_file))
             outer.attach(msg)
-        except:
-            print("Unable to open one of the attachments. Error: ", sys.exc_info()[0])
-            raise
+    except:
+        print("Unable to open one of the attachments. Error: ", sys.exc_info()[0])
+        raise
 
     composed = outer.as_string()
 
@@ -78,5 +87,28 @@ def send():
         print("Unable to send the email. Error: ", sys.exc_info()[0])
         raise
 
+def combine(date,images_list):
+    today = date.strftime('%Y%m%d')
+
+    images = map(Image.open, [x for x in images_list])
+    widths, heights = zip(*(i.size for i in images))
+
+    max_width = max(widths)
+    sum_height = sum(heights)
+
+
+    new_im = Image.new('RGB', (max_width, sum_height))
+
+    y_offset = 0
+    for image in images_list:
+      im = Image.open(image)
+      new_im.paste(im, (0,y_offset))
+      y_offset += im.size[1]
+
+    file = os.path.join(home,"Documents","{}_combine.jpg".format(today))
+    new_im.save(file)
+
 if __name__ == '__main__':
-    send()
+    date = sys.argv[1:]
+    date = datetime.datetime.strptime(date[0], '%Y-%m-%d')
+    send(date)
