@@ -25,7 +25,7 @@ def main():
 	conn = sqlite3.connect('cn_stocks.db')
 
 	print('Updating today data...\n')
-	#update_data_base()
+	update_data_base()
 	conn.commit()
 
 	print('Exporting Graph...\n')
