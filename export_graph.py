@@ -610,7 +610,7 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 	pro = ts.pro_api()
 	stocks_60 = pd.read_sql('select * from stocks_60_days where volume>0',conn)
 	all_stocks = pd.read_sql('select code,name,industry from all_stocks',conn)
-	d_range = get_dayrange(startfrom=date,num=31)
+	d_range = get_dayrange(startfrom=date,num=59)
 	stocks_60['date'] = pd.to_datetime(stocks_60['date'])
 	stocks_60_sub_5_days = stocks_60[stocks_60.date.isin(d_range)].sort_values('date',ascending=False)
 	today_top_rise = {}
