@@ -103,6 +103,68 @@ def update_data_base():
 
 	pbar.finish()
 
+def update_data_base_fast():
+	## Initialize database and setup tushare interface
+	conn = sqlite3.connect('cn_stocks.db')
+	pro = ts.pro_api()
+	stocks_60 	= {}
+	stocks_125 	= {}
+
+	## Check if today is trade day, if not, then return
+	today = datetime.datetime.today()
+	today_str = today.strftime("%Y-%m-%d")
+	if not is_trade_date(today):
+		return
+
+	one_year_before_str = (today-timedelta(days=365)).strftime("%Y%m%d")
+	cal = pro.trade_cal(start_date=one_year_before_str, end_date=today.strftime("%Y%m%d")).sort_values('cal_date',ascending=False)
+	cal['cal_date'] = pd.to_datetime(cal['cal_date'])
+	trade_date = cal[cal.is_open==1]['cal_date']
+
+	
+	## Start do updating
+	today_all  = ts.get_today_all()
+	today_all['date'] = today_str
+	today_all.reset_index().to_sql('today_all',conn,if_exists='replace',index=False)
+	today_all = today_all.set_index('code')
+
+	all_stocks = ts.get_stock_basics()
+	all_stocks.reset_index().to_sql('all_stocks',conn,if_exists='replace',index=False)
+	all_stocks_list = all_stocks.index.tolist()
+
+	widgets = [Bar('>'), ' ', ETA(), ' ', ReverseBar('<')]
+	pbar = ProgressBar(widgets=widgets,maxval=len(all_stocks_list)).start()
+	last_125 = pd.read_sql('select * from stocks_125_days;',conn) 
+	stocks_125_fast = {}
+	stocks_60_fast = {}
+	i=0
+	for code,g in last_125.groupby('code'):
+		current_stock = g.drop_duplicates(subset=['date'])
+		stock = today_all.loc[code][['open','high','trade','low','volume','changepercent']]
+		current_stock['datetime'] = pd.to_datetime(current_stock['date'])
+		current_stock = current_stock[current_stock['datetime'] < today]
+		current_stock.drop(['datetime'],axis=1,inplace=True)
+		df_stock = pd.DataFrame([stock])
+		df_stock['date'] = today.strftime('%Y-%m-%d 00:00:00')
+		df_stock['code'] = code
+		df_stock.columns = ['open','high','close','low','volume','p_change','date','code']
+		df_combine = pd.concat([current_stock.sort_values('date'),df_stock])
+		df_combine.drop_duplicates(subset='date',inplace=True)
+		df_combine['l_close'] = df_combine['close'].shift(1)
+		df_combine['islimit'] = df_combine.apply(lambda x: 1 if (x['volume']>0 and x['l_close']>0 and x['close']>=np.around((x['l_close']*1.1),decimals=2)) else (-1 if (x['volume']>0 and x['l_close']>0 and x['close']<=np.around((x['l_close']*0.9),decimals=2)) else 0),axis=1)
+		df_combine['date'] = pd.to_datetime(df_combine['date'])
+		mask_60 = (df_combine['date']>trade_date.iloc[60]) & (df_combine['date']<=trade_date.iloc[0])
+		stocks_60_fast[code]= df_combine.loc[mask_60]
+		stocks_125_fast[code] = df_combine
+		pbar.update(i + 1)
+		i+=1
+
+	st60_df_fast = pd.concat(stocks_60_fast)
+	st60_df_fast.to_sql('stocks_60_days',conn,if_exists='replace',index=False)
+	st125_df_fast = pd.concat(stocks_125_fast)
+	st125_df_fast.to_sql('stocks_125_days',conn,if_exists='replace',index=False)
+	pbar.finish()
+
 def post_data_process():
 	pro = ts.pro_api()
 	conn = sqlite3.connect('cn_stocks.db')
@@ -133,6 +195,7 @@ def post_data_process():
 			current_stock['l_high'] = current_stock['high'].shift(1)
 			current_stock['l_low'] = current_stock['low'].shift(1)
 			current_stock['price_change'] = np.around((current_stock['close'] - current_stock['l_close']),decimals=2)
+			current_stock['islimit'] = current_stock.apply(lambda x: 1 if (x['volume']>0 and x['l_close']>0 and x['close']>=np.around((x['l_close']*1.1),decimals=2)) else (-1 if (x['volume']>0 and x['l_close']>0 and x['close']<=np.around((x['l_close']*0.9),decimals=2)) else 0),axis=1)
 			current_stock['ma5'] = current_stock['ma5'].fillna(current_stock['close'].rolling(5).mean())
 			current_stock['max5'] = current_stock['close'].rolling(5).max()
 			current_stock['min5'] = current_stock['close'].rolling(5).min()
@@ -184,7 +247,7 @@ def post_data_process():
 
 def main():
     print('Updating today data...\n')
-    update_data_base()
+    update_data_base_fast()
     post_data_process()
     
 if __name__ == '__main__':

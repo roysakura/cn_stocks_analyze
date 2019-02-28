@@ -29,3 +29,11 @@ GRAPH = {
 	'GAUGE_1':10,
 
 }
+
+IMGTEMPLATE = {
+	'HEAD':'imgs/head.png',
+	'BANNER_MARKET':'imgs/banner_market.png',
+	'BANNER_INDUST':'imgs/banner_industry.png',
+	'BANNER_INDI':'imgs/banner_individual.png',
+	'FOOTER':'imgs/footer.png',
+}

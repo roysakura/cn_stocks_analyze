@@ -291,7 +291,7 @@ def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
 	ipo=[]
 	for code in candidates.code.tolist():
 		try:
-			stock_record = pd.read_sql('select * from \'{}\';'.format(code),conn)
+			stock_record = pd.read_sql('select * from stocks_60_days where code=\'{}\';'.format(code),conn)
 			if len(stock_record)<30:
 				ipo.append(code)
 		except:
@@ -328,7 +328,7 @@ def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
 
 def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=False):
 	title_desc = {range(0,1):u'市场人气太差,游资不敢接力连板',
-				  range(1,11):u'市场有点人气,游资开始接力连板',
+				  range(1,11):u'市场有点人气,游资少量接力连板',
 				  range(11,31):u'市场人气强劲,游资积极接力连板',
 				  range(31,61):u'无脑打连板的人太多,游资和机构接力连板',
 				  range(61,1000):u'人气爆棚,全民接力连板,股市的盛宴'}
@@ -337,7 +337,7 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 	today_limit_up_code =pd.read_sql('select code from stocks_60_days where islimit=1 and date=\'{}\''.format(date),conn)
 	stock_limit_up_record = {}
 	for stock_code in today_limit_up_code['code'].tolist():
-		stock_record = pd.read_sql('select * from \'{}\' where date<=\'{}\';'.format(stock_code,date),conn)
+		stock_record = pd.read_sql('select * from stocks_60_days where code=\'{}\' and date<=\'{}\';'.format(stock_code,date),conn)
 		limit_str = ''.join([str(x) for x in stock_record.sort_values('date',ascending=False)['islimit'].values.tolist()])
 		if len(limit_str)<30:
 			continue
@@ -681,7 +681,7 @@ def signal_trend(conn,date=datetime.datetime.today(),cloud_save=False):
 	yesterday_top_break = yesterday_top_break[['code','close']]
 	today_good_pratice = today_good_pratice[['code','high']]
 	combine_df = today_good_pratice.merge(yesterday_top_break,on='code',how='left')
-	if len(yesterday_top_break>0):
+	if len(yesterday_top_break)>0:
 		signal = round(np.sum(np.where(((combine_df['high']-combine_df['close'])/combine_df['close'])>=0.08,1,0))/len(yesterday_top_break),2)
 	else:
 		signal = 0
@@ -689,7 +689,7 @@ def signal_trend(conn,date=datetime.datetime.today(),cloud_save=False):
 	offset = (1 if len(yesterday_top_break)>=80 else (-1 if len(yesterday_top_break)<30 else 0))
 	score = (0+offset if signal<0.20 else (1+offset if signal>=0.2 and signal<0.4 else (2+offset if signal>=0.4 and signal<0.6 else (3+offset if signal>=0.6 and signal<0.8 else 4+offset))))
 	score =  0 if score<0 else (4 if score>4 else score)
-	ttfont = ImageFont.truetype("imgs/SIMHEI.TTF",35)
+	ttfont = ImageFont.truetype("imgs/SIMHEI.TTF",38)
 	im = Image.open('imgs/s-0{}.jpg'.format(score))
 	draw = ImageDraw.Draw(im)
 	title = u'今天{}赚钱效应{}, 仓位应{}'.format(date.strftime('%Y/%m/%d'),title_desc[score][0],title_desc[score][1])
@@ -716,7 +716,7 @@ def main():
 		continuous_limit_up_stocks(conn,date)
 		strong_industries(conn,date)
 		strong_week_graph(conn,date)
-		break_ma(conn,date)
+		#break_ma(conn,date)
 		continuous_rise_stocks(conn,date)
 		top_rise_down(conn,date)
 		ceil_first(conn,date)

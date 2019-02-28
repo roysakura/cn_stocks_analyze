@@ -23,6 +23,7 @@ from os.path import expanduser
 
 import sys
 from PIL import Image
+from wm import watermark
 
 
 endpoint = 'http://oss-cn-shenzhen.aliyuncs.com' # Suppose that your bucket is in the Hangzhou region.
@@ -46,17 +47,32 @@ def send(date=datetime.datetime.today()):
     outer.preamble = 'You will not see this in a MIME-aware mail reader.\n'
 
     # List of attachments
-    attachments = [settings.GRAPH['PERFORMANCE_1'],settings.GRAPH['PERFORMANCE_2'],settings.GRAPH['STRONG_INDUSTRIES_1']
-                    ,settings.GRAPH['STRONG_INDUSTRIES_2'],settings.GRAPH['LEAD_LIMIT'],settings.GRAPH['RANKING_1']
-                    ,settings.GRAPH['CONTINUOUSE_RISE'],settings.GRAPH['CONTINUOUS_LIMIT'],settings.GRAPH['GAUGE_1']]
+    attachments = [settings.IMGTEMPLATE['HEAD'],
+                    settings.IMGTEMPLATE['BANNER_MARKET'],
+                    settings.GRAPH['PERFORMANCE_1'],
+                    settings.GRAPH['PERFORMANCE_2'],
+                    settings.IMGTEMPLATE['BANNER_INDUST'],
+                    settings.GRAPH['STRONG_INDUSTRIES_1'],
+                    settings.GRAPH['STRONG_INDUSTRIES_2'],
+                    settings.IMGTEMPLATE['BANNER_INDI'],
+                    settings.GRAPH['LEAD_LIMIT'],
+                    settings.GRAPH['RANKING_1'],
+                    settings.GRAPH['CONTINUOUSE_RISE'],
+                    settings.GRAPH['CONTINUOUS_LIMIT'],
+                    settings.GRAPH['GAUGE_1'],
+                    settings.IMGTEMPLATE['FOOTER']]
     combine_files = []
     for i in attachments:
-        file = os.path.join(home,"Documents","{}.jpg".format(i))
-        try:
+        if type(i)==int:
+            file = os.path.join(home,"Documents","{}.jpg".format(i))
             result = bucket.get_object_to_file('{}_{}.jpg'.format(today,i), file)
+            mark = Image.open('imgs/watermark.png', 'r')
+            img = Image.open(file)
+            img = watermark(img, mark, 'scale', 0.1)
+            img.save(file, format='JPEG', quality=90)
             combine_files.append(file)
-        except:
-            continue
+        else:
+            combine_files.append(i)
 
     combine(date,combine_files)       
     final_file = os.path.join(home,"Documents","{}_combine.jpg".format(today))
