@@ -448,9 +448,9 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	industry_top.columns = ['number']
 	industry_top.sort_values('number',ascending=False,inplace=True)
 
-	title = u'今天({})最强板块是{}，近一周的连续强势板块{}'.format(date.strftime('%Y/%m/%d'),top_rds.iloc[0]['industry'],industry_top.index.tolist()[0])
+	title = u'今天({})最强板块是{}，近一周的连续强势板块{}'.format(date.strftime('%Y/%m/%d'),top_rds.iloc[0]['industry'],industry_top.index.tolist()[0] if industry_top.iloc[0]['number']>2 else u'还没出现,请耐心等待')
 
-	layout = dict(font=dict(size=15),title=title,margin=dict(l=0,r=0,b=0,t=100),height=len(top_rds)*45+220)
+	layout = dict(font=dict(size=12),title=title,margin=dict(l=0,r=0,b=0,t=100),height=len(top_rds)*45+220)
 
 	data = [trace]
 
@@ -559,13 +559,12 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 	for n,g in stocks_60.groupby('code'):
 		if len(g)<30:
 			continue
-		continuous_rise.setdefault(n,0)
 		try:
-			accumulate_change = (g.iloc[0]['close']-g.iloc[10]['close'])/g.iloc[10]['close']
+			accumulate_change = (g.iloc[0]['close']-g.iloc[11]['close'])/g.iloc[11]['close']
 		except:
 			continue
 
-		if (accumulate_change>=0.2) and (accumulate_change<=0.4) and (g.iloc[0:11]['p_change']>0).sum()>=8:
+		if (accumulate_change>=0.2) and (accumulate_change<=0.4) and (g.iloc[0:10]['p_change']>0).sum()>=8:
 			continuous_rise[n] = round(accumulate_change*100,2) 
 
 
