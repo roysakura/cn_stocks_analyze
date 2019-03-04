@@ -489,8 +489,115 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['STRONG_INDUSTRIES_2'])
 		bucket.put_object_from_file(file_name,file)
 
-	#return top_rds.to_json(orient='index')
+def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
+	days_range = 20
+	stocks_60 = pd.read_sql('select * from stocks_60_days',conn)
+	all_stocks = pd.read_sql('select code,name,industry from all_stocks',conn)
+	all_concepts = pd.read_sql('select code,c_name from all_concepts',conn)
+	all_stocks = all_stocks.merge(all_concepts,on='code',how='left')
+	stocks_60 = stocks_60.merge(all_stocks,on='code',how='left')
+	pro = ts.pro_api()
+	d_range = get_dayrange(date,num=days_range)
+	stocks_60['date'] = pd.to_datetime(stocks_60['date'])
+	industry_top = {}
+	for d in d_range:
+		l = []
+		stocks_60_t = stocks_60[stocks_60.date.isin([d])][['code','name','islimit','c_name']]
+		limit_stocks = stocks_60_t[stocks_60_t['islimit']==True]['c_name'].astype(str)
+		print(len(limit_stocks))
+		for x in limit_stocks:
+			l+=x.split(',')
+		l = list(filter(('nan').__ne__, l))
+		industry_top[d] = dict(Counter(l))
+		industry_top[d] = sorted(industry_top[d].items(), key=lambda kv: kv[1],reverse=True)
+		print(industry_top[d])
+		break
 
+'''
+	industry_top_df = pd.DataFrame.from_dict({(i,j): industry_top[i][j] 
+	                         for i in industry_top.keys() 
+	                         for j in industry_top[i].keys()},
+	                     orient='index')
+
+	industry_top_df_ = industry_top_df.reset_index()
+	industry_top_df_.columns=['date','c_name','number']
+	industry_top_df_ = industry_top_df_.sort_values(['date','number'], ascending=[False, False])
+	top_3_list = {}
+	top_3_df = []
+	for d,g in industry_top_df_.groupby('date'):
+	  top_3_list.setdefault(d,None)
+	  top_3_list[d] = g.head(3)
+	  top_3_df.append(top_3_list[d])
+
+	top_rds = pd.concat(top_3_df)  
+	top_rds = top_rds.sort_values(['date','number'],ascending=[False,False]).astype('str')
+	top_rds = top_rds[:(5*3)] # Five days records
+	colors = cl.scales['5']['seq']['YlOrRd']
+	top_rds['color'] = LabelEncoder().fit_transform(top_rds['date'])
+	top_rds['color'] = top_rds['color'].map(lambda x:colors[x])
+	trace = go.Table(
+	columnwidth=[12,20,8],
+	header=dict(values=list([u'日期',u'所属概念',u'涨停个股',]),
+	fill = dict(color='#C2D4FF'),
+	font=dict(size=[30,30,30]),
+	height=45),
+	cells=dict(values=[top_rds.date, top_rds.c_name, top_rds.number],
+	fill = dict(color=[top_rds.color]),
+	font = dict(color='black',size=[30,30,30]),
+	height=45))
+
+	#Top 5 
+	group_industry = {}
+	for n,g in top_rds.groupby('c_name'):
+		group_industry[n]=len(g)
+
+	industry_top = pd.DataFrame.from_dict(group_industry,orient='index')
+	industry_top.columns = ['number']
+	industry_top.sort_values('number',ascending=False,inplace=True)
+
+	title = u'今天({})最强板块是{}，近一周的连续强势板块{}'.format(date.strftime('%Y/%m/%d'),top_rds.iloc[0]['c_name'],industry_top.index.tolist()[0] if industry_top.iloc[0]['number']>2 else u'还没出现,请耐心等待')
+
+	layout = dict(font=dict(size=12),title=title,margin=dict(l=0,r=0,b=0,t=100),height=len(top_rds)*45+220)
+
+	data = [trace]
+
+	fig = go.Figure(data=data,layout=layout)
+
+	iplot(fig)
+	directory = os.path.join(home,"Documents","cnstocks")
+	file = os.path.join(home,"Documents","cnstocks","{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['STRONG_INDUSTRIES_3']))
+	if not os.path.exists(directory):
+		os.makedirs(directory)
+	pio.write_image(fig, file,scale=2)
+	combine_title(str(settings.GRAPH['STRONG_INDUSTRIES_3'])+'_title.png',file)
+	if cloud_save:
+		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['STRONG_INDUSTRIES_3'])
+		bucket.put_object_from_file(file_name,file)
+
+
+	graph = []
+	graph.append(
+	go.Pie(labels=industry_top.index.tolist(),values=industry_top.number,textfont=dict(size=20),pull=.2,hole=.1,
+		text=industry_top.index.tolist(),textposition="inside",
+		)
+	)
+
+	layout = dict(title = u'({})近期强势板块比例'.format(date.strftime('%Y/%m/%d')),showlegend=False)
+
+	fig = go.Figure(data=graph, layout=layout)
+	iplot(fig)
+	directory = os.path.join(home,"Documents","cnstocks")
+	file = os.path.join(home,"Documents","cnstocks","{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['STRONG_INDUSTRIES_4']))
+	if not os.path.exists(directory):
+		os.makedirs(directory)
+	pio.write_image(fig, file,scale=2)
+	combine_title(str(settings.GRAPH['STRONG_INDUSTRIES_4'])+'_title.png',file)
+	if cloud_save:
+		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['STRONG_INDUSTRIES_4'])
+		bucket.put_object_from_file(file_name,file)
+
+	#return top_rds.to_json(orient='index')
+'''
 def break_ma(conn,date=datetime.datetime.today(),cloud_save=False):
 	pro = ts.pro_api()
 	stocks_60 = pd.read_sql('select * from stocks_60_days',conn)
@@ -668,7 +775,7 @@ def signal_trend(conn,date=datetime.datetime.today(),cloud_save=False):
 				  1:[u'弱',u'减少,保留40%以下仓位'],
 				  2:[u'强',u'提高,保留60%左右仓位'],
 				  3:[u'很强',u'大幅提高,加至80%左右仓位甚至满仓'],
-				  4:[u'超级强',u'提高到极限,满仓是必须的,轻仓是在犯罪']}
+				  4:[u'超级强',u'仓位应提高到满仓,轻仓是在犯罪']}
 
 	daterange = get_dayrange(startfrom=date,num=1)
 	stocks_60 = pd.read_sql('select * from stocks_60_days where volume>0',conn)
@@ -714,8 +821,9 @@ def main():
 		performance(conn,date)
 		continuous_limit_up_stocks(conn,date)
 		strong_industries(conn,date)
+		strong_concepts(conn,date)
 		strong_week_graph(conn,date)
-		#break_ma(conn,date)
+		break_ma(conn,date)
 		continuous_rise_stocks(conn,date)
 		top_rise_down(conn,date)
 		ceil_first(conn,date)
