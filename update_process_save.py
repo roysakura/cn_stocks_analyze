@@ -12,7 +12,7 @@ import sqlite3
 from plotly.offline import init_notebook_mode,iplot
 import plotly.graph_objs as go
 import plotly.io as pio
-from stocks_update import update_data_base,is_trade_date,post_data_process,update_data_base_fast
+from stocks_update import update_data_base,is_trade_date,post_data_process,update_data_base_fast,update_concepts
 from export_graph import *
 from send_email import send
 
@@ -45,6 +45,7 @@ def main():
 	send()
 
 	post_data_process()
+	update_concepts()
 
 if __name__ == '__main__':
 	main()

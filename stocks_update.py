@@ -3,6 +3,7 @@ import tushare as ts
 import pandas as pd
 import numpy as np
 import datetime
+import time
 from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR
 from datetime import timedelta
 from progressbar import ProgressBar,SimpleProgress,Bar,ETA,ReverseBar
@@ -258,11 +259,42 @@ def post_data_process():
 
 	pbar.finish()
 
+def update_concepts():
+	pro = ts.pro_api()
+	conn = sqlite3.connect('cn_stocks.db')
+	all_stocks = pd.read_sql('select * from all_stocks',conn)
+	concepts = pro.concept(src='ts')
+
+	widgets = [Bar('>'), ' ', ETA(), ' ', ReverseBar('<')]
+	pbar = ProgressBar(widgets=widgets,maxval=len(concepts['code'])+1).start()
+	all_concepts = pd.DataFrame()
+	for i,code in enumerate(concepts['code'],1):
+		cl = pro.concept_detail(id='{}'.format(code), fields='ts_code,name')
+		cl['concepts'] = code
+		all_concepts = pd.concat([all_concepts,cl])
+		if i%90==0:
+			time.sleep(60)
+		pbar.update(i+1)
+
+	pbar.finish()
+
+	concepts.columns = ['code','c_name','src']
+	all_concepts.columns= ['ts_code','name','code']
+	all_concepts_merge = all_concepts.merge(concepts,on='code',how='left')
+	concept_df = pd.DataFrame()
+	for code,g in all_concepts_merge.groupby('ts_code'):
+		concept_df = pd.concat([concept_df,pd.DataFrame([[code[:-3],list(g['c_name'].unique())]])])  
+	concept_df.columns=['code','c_name']
+	concept_df['c_name'] = concept_df['c_name'].map(lambda x: ','.join(x))
+
+	concept_df.to_sql('all_concepts',conn,if_exists='replace',index=False)
+
 
 def main():
     print('Updating today data...\n')
     update_data_base_fast()
     post_data_process()
+    update_concepts()
     
 if __name__ == '__main__':
     main()
