@@ -125,7 +125,7 @@ def performance(conn,date=datetime.datetime.today(),cloud_save=False):
 def strong_week_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 	daterange = get_dayrange(startfrom=date,num=10)
 	all_stocks =pd.read_sql('select code,name,industry from all_stocks',conn)
-	stocks_60 =pd.read_sql('select * from stocks_60_days where date<=\'{} 00:00:00\' and date>=\'{} 00:00:00\''.format(daterange[0].strftime('%Y-%m-%d'),daterange[9].strftime('%Y-%m-%d')),conn).drop_duplicates(subset=['code'],keep=False)
+	stocks_60 =pd.read_sql('select * from stocks_60_days where date<=\'{} 00:00:00\' and date>=\'{} 00:00:00\''.format(daterange[0].strftime('%Y-%m-%d'),daterange[9].strftime('%Y-%m-%d')),conn)
 	
 	stats = {}
 	for n,g in stocks_60.groupby('date'):
