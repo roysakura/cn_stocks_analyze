@@ -79,7 +79,7 @@ def performance(conn,date=datetime.datetime.today(),cloud_save=False):
 	text=hist_data_today_all_changepercent_over_0[0],
 	textposition = 'outside',
 	marker=dict(
-	color='#d10031',
+	color='#F3361E',
 	)
 	)
 	)
@@ -92,7 +92,7 @@ def performance(conn,date=datetime.datetime.today(),cloud_save=False):
 	text=hist_data_today_all_changepercent_less_0[0],
 	textposition = 'outside',
 	marker=dict(
-	color='#02c927',
+	color='#31A09D',
 	)
 	)
 	)
@@ -103,10 +103,10 @@ def performance(conn,date=datetime.datetime.today(),cloud_save=False):
 	title=''
 	for key,item in title_desc.items():
 		if round(hist_data_today[1][np.argmax(hist_data_today[0])],1) in [round(x,1) for x in item]:
-			title = u'{}市场表现{}'.format(date.strftime('%Y/%m/%d'),key)
+			title = u'{}  市场表现{}'.format(date.strftime(u'%Y年%m月%d日'),key)
 
-	layout_one = dict(title = title,
-	        xaxis=go.layout.XAxis(title=u'幅度',ticktext=labels,tickvals=tickvals),
+	layout_one = dict(title = dict(text=title,x=0.08,y=0.9),
+	        xaxis=go.layout.XAxis(title=u'幅度',ticktext=labels,tickvals=tickvals,tickangle=0,tickfont=dict(size=9)),
 	        yaxis = dict(title = '数量',tick0=0, dtick=100))
 
 	fig = go.Figure(data=graph_one, layout=layout_one)
@@ -123,7 +123,10 @@ def performance(conn,date=datetime.datetime.today(),cloud_save=False):
 		bucket.put_object_from_file(file_name,file)
 
 def strong_week_graph(conn,date=datetime.datetime.today(),cloud_save=False):
-	stocks_60 =pd.read_sql('select * from stocks_60_days',conn)
+	daterange = get_dayrange(startfrom=date,num=10)
+	all_stocks =pd.read_sql('select code,name,industry from all_stocks',conn)
+	stocks_60 =pd.read_sql('select * from stocks_60_days where date<=\'{} 00:00:00\' and date>=\'{} 00:00:00\''.format(daterange[0].strftime('%Y-%m-%d'),daterange[9].strftime('%Y-%m-%d')),conn).drop_duplicates(subset=['code'],keep=False)
+	
 	stats = {}
 	for n,g in stocks_60.groupby('date'):
 		stats.setdefault(n,{})
@@ -135,7 +138,8 @@ def strong_week_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 	data = pd.DataFrame.from_dict(stats, orient='index')
 	data = data.reset_index()
 
-	data = data[-10:]
+	data.columns = ['date','over_5%','less_5%']
+	data.sort_values('date',ascending = False,inplace=True)
 	graph_two = []
 
 	graph_two.append(
@@ -170,7 +174,7 @@ def strong_week_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	
 
-	labels = [d[:-9] for d in data['index']]
+	labels = [d[:-9] for d in data['date']]
 	tickvals = data.index
 	title_sub1 = u'追涨' if (data.iloc[0]['over_5%'] > data.iloc[0]['less_5%']) else u'杀跌'
 	title_sub2 = u'暴涨' if (np.sum(data['over_5%']) > np.sum(data['less_5%'])) else u'暴跌'
@@ -308,7 +312,7 @@ def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
 	,font=dict(size=[30,30,30]),height=45,
 	fill=dict(color='#66aaff')))
 
-	layout = dict(title=u"({}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负)".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=100),height=len(candidates)*45+220)
+	layout = dict(title=u"({}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负)".format(date.strftime("%Y/%m/%d")),margin=dict(l=20,r=20,b=30,t=100),height=len(candidates)*45+220)
 
 	data = [trace]
 
@@ -341,7 +345,13 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 		limit_str = ''.join([str(x) for x in stock_record.sort_values('date',ascending=False)['islimit'].values.tolist()])
 		if len(limit_str)<30:
 			continue
-		stock_limit_up_record[stock_code] = limit_str.find('0')
+		current_limit = 0
+		for limit in limit_str:
+			if limit!='1':
+				break
+			else:
+				current_limit+=1
+		stock_limit_up_record[stock_code] = current_limit
 
 	limit_up_stocks = pd.DataFrame()
 	if len(stock_limit_up_record)>0:
@@ -374,7 +384,7 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 		if len(limit_up_combined) in key:
 			title = u"{} {}".format(date.strftime("%Y/%m/%d"),item)
 
-	layout = dict(font=dict(size=20),title=title,margin=dict(l=0,r=0,b=0,t=100),height=len(limit_up_combined)*45+220)
+	layout = dict(font=dict(size=20),title=title,margin=dict(l=20,r=20,b=30,t=100),height=len(limit_up_combined)*45+220)
 
 	data = [trace]
 
@@ -450,7 +460,7 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	title = u'今天({})最强板块是{}，近一周的连续强势板块{}'.format(date.strftime('%Y/%m/%d'),top_rds.iloc[0]['industry'],industry_top.index.tolist()[0] if industry_top.iloc[0]['number']>2 else u'还没出现,请耐心等待')
 
-	layout = dict(font=dict(size=12),title=title,margin=dict(l=0,r=0,b=0,t=100),height=len(top_rds)*45+220)
+	layout = dict(font=dict(size=12),title=title,margin=dict(l=20,r=20,b=30,t=100),height=len(top_rds)*45+220)
 
 	data = [trace]
 
@@ -636,7 +646,7 @@ def break_ma(conn,date=datetime.datetime.today(),cloud_save=False):
 		height=45)
 		)
 
-		layout = dict(font=dict(size=20),title=u"{} 突破图".format(two_days[1].strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=100),height=len(bt_df)*45+220)
+		layout = dict(font=dict(size=20),title=u"{} 突破图".format(two_days[1].strftime("%Y/%m/%d")),margin=dict(l=20,r=20,b=30,t=100),height=len(bt_df)*45+220)
 
 		data = [trace]
 
@@ -695,7 +705,7 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 	font=dict(size=[30,30,30,30]),height=45,fill = dict(color='#66aaff'),),
 	)
 
-	layout = dict(title=u"({})此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=100),height=len(continuous_rise_candidate_df)*45+220)
+	layout = dict(title=u"({})此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),margin=dict(l=20,r=20,b=30,t=100),height=len(continuous_rise_candidate_df)*45+220)
 
 	data = [trace]
 
@@ -753,7 +763,7 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 	)
 	)
 
-	layout = dict(title=u"({})此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),margin=dict(l=0,r=0,b=0,t=100),height=len(today_top_bottom)*45+220)
+	layout = dict(title=u"({})此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),margin=dict(l=20,r=20,b=30,t=100),height=len(today_top_bottom)*45+220)
 
 	data = [trace]
 
@@ -775,7 +785,7 @@ def signal_trend(conn,date=datetime.datetime.today(),cloud_save=False):
 				  1:[u'弱',u'减少,保留40%以下仓位'],
 				  2:[u'强',u'提高,保留60%左右仓位'],
 				  3:[u'很强',u'大幅提高,加至80%左右仓位甚至满仓'],
-				  4:[u'超级强',u'仓位应提高到满仓,轻仓是在犯罪']}
+				  4:[u'超级强',u'提高到满仓,轻仓是在犯罪']}
 
 	daterange = get_dayrange(startfrom=date,num=1)
 	stocks_60 = pd.read_sql('select * from stocks_60_days where volume>0',conn)
@@ -821,9 +831,9 @@ def main():
 		performance(conn,date)
 		continuous_limit_up_stocks(conn,date)
 		strong_industries(conn,date)
-		strong_concepts(conn,date)
+		#strong_concepts(conn,date)
 		strong_week_graph(conn,date)
-		break_ma(conn,date)
+		#break_ma(conn,date)
 		continuous_rise_stocks(conn,date)
 		top_rise_down(conn,date)
 		ceil_first(conn,date)
