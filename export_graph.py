@@ -150,7 +150,7 @@ def strong_week_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 	text=data['less_5%'],
 	textposition = 'auto',
 	marker=dict(
-	color='#02c927',
+	color='#31A09D',
 	),
 	opacity=0.8,
 	orientation='h'
@@ -165,7 +165,7 @@ def strong_week_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 	text=data['over_5%'],
 	textposition = 'auto',
 	marker=dict(
-	color='#d10031',
+	color='#F3361E',
 	),
 	opacity=0.8,
 	orientation='h'
