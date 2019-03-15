@@ -46,7 +46,6 @@ def main():
 	send()
 
 	post_data_process()
-	update_concepts()
 
 if __name__ == '__main__':
 	main()
