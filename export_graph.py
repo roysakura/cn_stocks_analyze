@@ -458,7 +458,7 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	industry_top.columns = ['number']
 	industry_top.sort_values('number',ascending=False,inplace=True)
 
-	title = u'今天({})最强板块是{}，近一周的连续强势板块{}'.format(date.strftime('%Y/%m/%d'),top_rds.iloc[0]['industry'],industry_top.index.tolist()[0] if industry_top.iloc[0]['number']>2 else u'还没出现,请耐心等待')
+	title = u'今天({})最强行业是{}，近一周的连续强势行业{}'.format(date.strftime('%Y/%m/%d'),top_rds.iloc[0]['industry'],industry_top.index.tolist()[0] if industry_top.iloc[0]['number']>2 else u'还没出现,请耐心等待')
 
 	layout = dict(font=dict(size=12),title=title,margin=dict(l=20,r=20,b=30,t=100),height=len(top_rds)*45+220)
 
@@ -485,7 +485,7 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 		)
 	)
 
-	layout = dict(title = u'({})近期强势板块比例'.format(date.strftime('%Y/%m/%d')),showlegend=False)
+	layout = dict(title = u'({})近期强势行业统计'.format(date.strftime('%Y/%m/%d')),showlegend=False)
 
 	fig = go.Figure(data=graph, layout=layout)
 	iplot(fig)
@@ -514,16 +514,16 @@ def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 		l = []
 		stocks_60_t = stocks_60[stocks_60.date.isin([d])][['code','name','islimit','c_name']]
 		limit_stocks = stocks_60_t[stocks_60_t['islimit']==True]['c_name'].astype(str)
-		print(len(limit_stocks))
 		for x in limit_stocks:
 			l+=x.split(',')
 		l = list(filter(('nan').__ne__, l))
-		industry_top[d] = dict(Counter(l))
-		industry_top[d] = sorted(industry_top[d].items(), key=lambda kv: kv[1],reverse=True)
-		print(industry_top[d])
-		break
+		industry_top.setdefault(d,{})
+		for k,v in dict(Counter(l)).items():
+			industry_top[d].setdefault(k,{})
+			industry_top[d][k]['number'] = v
 
-'''
+		#industry_top[d] = sorted(industry_top[d].items(), key=lambda kv: kv[1],reverse=True)
+
 	industry_top_df = pd.DataFrame.from_dict({(i,j): industry_top[i][j] 
 	                         for i in industry_top.keys() 
 	                         for j in industry_top[i].keys()},
@@ -565,7 +565,7 @@ def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 	industry_top.columns = ['number']
 	industry_top.sort_values('number',ascending=False,inplace=True)
 
-	title = u'今天({})最强板块是{}，近一周的连续强势板块{}'.format(date.strftime('%Y/%m/%d'),top_rds.iloc[0]['c_name'],industry_top.index.tolist()[0] if industry_top.iloc[0]['number']>2 else u'还没出现,请耐心等待')
+	title = u'今天({})最强概念是{}，近一周的连续强势概念{}'.format(date.strftime('%Y/%m/%d'),top_rds.iloc[0]['c_name'],industry_top.index.tolist()[0] if industry_top.iloc[0]['number']>2 else u'还没出现,请耐心等待')
 
 	layout = dict(font=dict(size=12),title=title,margin=dict(l=0,r=0,b=0,t=100),height=len(top_rds)*45+220)
 
@@ -592,7 +592,7 @@ def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 		)
 	)
 
-	layout = dict(title = u'({})近期强势板块比例'.format(date.strftime('%Y/%m/%d')),showlegend=False)
+	layout = dict(title = u'({})近期强势概念统计'.format(date.strftime('%Y/%m/%d')),showlegend=False)
 
 	fig = go.Figure(data=graph, layout=layout)
 	iplot(fig)
@@ -607,7 +607,7 @@ def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 		bucket.put_object_from_file(file_name,file)
 
 	#return top_rds.to_json(orient='index')
-'''
+
 def break_ma(conn,date=datetime.datetime.today(),cloud_save=False):
 	pro = ts.pro_api()
 	stocks_60 = pd.read_sql('select * from stocks_60_days',conn)
@@ -637,7 +637,7 @@ def break_ma(conn,date=datetime.datetime.today(),cloud_save=False):
 
 		trace = go.Table(
 		columnwidth=[12,30,30,10],
-		header=dict(values=list([u'号码',u'中文',u'所属行业',u'涨幅']),
+		header=dict(values=list([u'代码',u'中文',u'所属行业',u'涨幅']),
 		fill = dict(color='#C2D4FF'),
 		font=dict(size=[30,30,30,30]),
 		height=45),
@@ -698,7 +698,7 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 
 	trace = go.Table(
 	columnwidth=[20,30,30,20],
-	header=dict(values=list([u'号码',u'名称',u'所属行业',u'今日涨幅']),
+	header=dict(values=list([u'代码',u'名称',u'所属行业',u'今日涨幅']),
 	fill = dict(color='#C2D4FF'),
 	font=dict(size=(30,30,30,30)),height=45),
 	cells=dict(values=[continuous_rise_candidate_df.code, continuous_rise_candidate_df.name, continuous_rise_candidate_df.industry,continuous_rise_candidate_df.p_change_str],
@@ -752,7 +752,7 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	trace = go.Table(
 	columnwidth=[20,30,30,20],
-	header=dict(values=list([u'号码',u'名称',u'所属行业',u'幅度']),
+	header=dict(values=list([u'代码',u'名称',u'所属行业',u'幅度']),
 	font=dict(size=[30,30,30,30]),
 	height=45,
 	fill = dict(color='#C2D4FF')
@@ -831,7 +831,7 @@ def main():
 		performance(conn,date,True)
 		continuous_limit_up_stocks(conn,date,True)
 		strong_industries(conn,date,True)
-		#strong_concepts(conn,date)
+		strong_concepts(conn,date)
 		strong_week_graph(conn,date,True)
 		#break_ma(conn,date)
 		continuous_rise_stocks(conn,date,True)
