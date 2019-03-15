@@ -180,7 +180,7 @@ def strong_week_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 	title_sub2 = u'暴涨' if (np.sum(data['over_5%']) > np.sum(data['less_5%'])) else u'暴跌'
 	title = u'今天({}){}的气氛更浓,纵观近期市场,{}个股总数更多.'.format(date.strftime('%Y%m%d'),title_sub1,title_sub2)
 
-	layout_two = dict(title = title,
+	layout_two = dict(title = dict(text=title,x=0.08,y=0.9),
 	yaxis=go.layout.YAxis(ticktext=labels,tickvals=tickvals),
 	xaxis = dict(title = '数量',tick0=0, dtick=100),
 	)
@@ -306,13 +306,13 @@ def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
 	trace = go.Table(
 	columnwidth=[20,30,30],
 	header=dict(values=list([u'代码',u'名称',u'所属行业',]),
-	fill = dict(color='#C2D4FF'),
+	fill = dict(color='#31A09D'),
 	font=dict(size=[30,30,30]),height=45),
 	cells=dict(values=[candidates.code, candidates.name,candidates.industry]
 	,font=dict(size=[30,30,30]),height=45,
 	fill=dict(color='#66aaff')))
 
-	layout = dict(title=u"({}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负)".format(date.strftime("%Y/%m/%d")),margin=dict(l=20,r=20,b=30,t=100),height=len(candidates)*45+220)
+	layout = dict(font=dict(size=14),title=dict(text=u"({}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负)".format(date.strftime("%Y/%m/%d")),x=0.03,y=0.9),margin=dict(l=20,r=20,b=30,t=100),height=len(candidates)*45+220)
 
 	data = [trace]
 
@@ -371,7 +371,7 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 	trace = go.Table(
 	columnwidth = [12,20,12,20],
 	header=dict(values=list([u'代码',u'名称',u'连板次数',u'所属行业',]),
-	fill = dict(color='#C2D4FF'),
+	fill = dict(color='#31A09D'),
 	font = dict(size=[30,30,30,30]),height=45),
 	cells=dict(values=[limit_up_combined.code, limit_up_combined.name, limit_up_combined.freq, limit_up_combined.industry],
 	fill = dict(color=[limit_up_combined.color]),
@@ -384,7 +384,7 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 		if len(limit_up_combined) in key:
 			title = u"{} {}".format(date.strftime("%Y/%m/%d"),item)
 
-	layout = dict(font=dict(size=20),title=title,margin=dict(l=20,r=20,b=30,t=100),height=len(limit_up_combined)*45+220)
+	layout = dict(font=dict(size=14),title=dict(text=title,x=0.03,y=0.92),margin=dict(l=20,r=20,b=30,t=100),height=len(limit_up_combined)*45+220)
 
 	data = [trace]
 
@@ -441,7 +441,7 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	trace = go.Table(
 	columnwidth=[12,20,8],
 	header=dict(values=list([u'日期',u'所属行业',u'涨停个股',]),
-	fill = dict(color='#C2D4FF'),
+	fill = dict(color='#31A09D'),
 	font=dict(size=[30,30,30]),
 	height=45),
 	cells=dict(values=[top_rds.date, top_rds.industry, top_rds.number],
@@ -460,7 +460,7 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	title = u'今天({})最强行业是{}，近一周的连续强势行业{}'.format(date.strftime('%Y/%m/%d'),top_rds.iloc[0]['industry'],industry_top.index.tolist()[0] if industry_top.iloc[0]['number']>2 else u'还没出现,请耐心等待')
 
-	layout = dict(font=dict(size=12),title=title,margin=dict(l=20,r=20,b=30,t=100),height=len(top_rds)*45+220)
+	layout = dict(font=dict(size=14),title=dict(text=title,x=0.03,y=0.94),margin=dict(l=20,r=20,b=30,t=100),height=len(top_rds)*45+220)
 
 	data = [trace]
 
@@ -485,7 +485,7 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 		)
 	)
 
-	layout = dict(title = u'({})近期强势行业统计'.format(date.strftime('%Y/%m/%d')),showlegend=False)
+	layout = dict(font=dict(size=14),title=dict(text=u'({})近期强势行业统计'.format(date.strftime('%Y/%m/%d')),y=0.9),showlegend=False)
 
 	fig = go.Figure(data=graph, layout=layout)
 	iplot(fig)
@@ -548,7 +548,7 @@ def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 	trace = go.Table(
 	columnwidth=[12,20,8],
 	header=dict(values=list([u'日期',u'所属概念',u'涨停个股',]),
-	fill = dict(color='#C2D4FF'),
+	fill = dict(color='#31A09D'),
 	font=dict(size=[30,30,30]),
 	height=45),
 	cells=dict(values=[top_rds.date, top_rds.c_name, top_rds.number],
@@ -567,7 +567,7 @@ def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	title = u'今天({})最强概念是{}，近一周的连续强势概念{}'.format(date.strftime('%Y/%m/%d'),top_rds.iloc[0]['c_name'],industry_top.index.tolist()[0] if industry_top.iloc[0]['number']>2 else u'还没出现,请耐心等待')
 
-	layout = dict(font=dict(size=12),title=title,margin=dict(l=0,r=0,b=0,t=100),height=len(top_rds)*45+220)
+	layout = dict(font=dict(size=14),title=dict(text=title,x=0.03,y=0.94),margin=dict(l=20,r=20,b=30,t=100),height=len(top_rds)*45+220)
 
 	data = [trace]
 
@@ -592,7 +592,7 @@ def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 		)
 	)
 
-	layout = dict(title = u'({})近期强势概念统计'.format(date.strftime('%Y/%m/%d')),showlegend=False)
+	layout = dict(font=dict(size=14),title = dict(text=u'({})近期强势概念统计'.format(date.strftime('%Y/%m/%d')),y=0.9),showlegend=False)
 
 	fig = go.Figure(data=graph, layout=layout)
 	iplot(fig)
@@ -638,7 +638,7 @@ def break_ma(conn,date=datetime.datetime.today(),cloud_save=False):
 		trace = go.Table(
 		columnwidth=[12,30,30,10],
 		header=dict(values=list([u'代码',u'中文',u'所属行业',u'涨幅']),
-		fill = dict(color='#C2D4FF'),
+		fill = dict(color='#31A09D'),
 		font=dict(size=[30,30,30,30]),
 		height=45),
 		cells=dict(values=[bt_df.code, bt_df.name, bt_df.industry,bt_df.p_change_str],
@@ -699,13 +699,13 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 	trace = go.Table(
 	columnwidth=[20,30,30,20],
 	header=dict(values=list([u'代码',u'名称',u'所属行业',u'今日涨幅']),
-	fill = dict(color='#C2D4FF'),
+	fill = dict(color='#31A09D'),
 	font=dict(size=(30,30,30,30)),height=45),
 	cells=dict(values=[continuous_rise_candidate_df.code, continuous_rise_candidate_df.name, continuous_rise_candidate_df.industry,continuous_rise_candidate_df.p_change_str],
 	font=dict(size=[30,30,30,30]),height=45,fill = dict(color='#66aaff'),),
 	)
 
-	layout = dict(title=u"({})此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),margin=dict(l=20,r=20,b=30,t=100),height=len(continuous_rise_candidate_df)*45+220)
+	layout = dict(font=dict(size=14),title=dict(text=u"({}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负)".format(date.strftime("%Y/%m/%d")),x=0.03,y=0.92),margin=dict(l=20,r=20,b=30,t=100),height=len(continuous_rise_candidate_df)*45+220)
 
 	data = [trace]
 
@@ -755,7 +755,7 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 	header=dict(values=list([u'代码',u'名称',u'所属行业',u'幅度']),
 	font=dict(size=[30,30,30,30]),
 	height=45,
-	fill = dict(color='#C2D4FF')
+	fill = dict(color='#31A09D')
 	),
 	cells=dict(values=[today_top_bottom.code, today_top_bottom.name, today_top_bottom.industry,today_top_bottom.p_change_str],
 	font = dict(size=[30,30,30,30]),height=45,
@@ -763,7 +763,7 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 	)
 	)
 
-	layout = dict(title=u"({})此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),margin=dict(l=20,r=20,b=30,t=100),height=len(today_top_bottom)*45+220)
+	layout = dict(font=dict(size=14),title=dict(text=u"({}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负)".format(date.strftime("%Y/%m/%d")),x=0.03,y=0.92),margin=dict(l=20,r=20,b=30,t=100),height=len(today_top_bottom)*45+220)
 
 	data = [trace]
 
@@ -805,7 +805,7 @@ def signal_trend(conn,date=datetime.datetime.today(),cloud_save=False):
 	offset = (1 if len(yesterday_top_break)>=80 else (-1 if len(yesterday_top_break)<30 else 0))
 	score = (0+offset if signal<0.20 else (1+offset if signal>=0.2 and signal<0.4 else (2+offset if signal>=0.4 and signal<0.6 else (3+offset if signal>=0.6 and signal<0.8 else 4+offset))))
 	score =  0 if score<0 else (4 if score>4 else score)
-	ttfont = ImageFont.truetype("imgs/SIMHEI.TTF",38)
+	ttfont = ImageFont.truetype("imgs/SIMHEI.TTF",40)
 	im = Image.open('imgs/s-0{}.jpg'.format(score))
 	draw = ImageDraw.Draw(im)
 	title = u'今天{}赚钱效应{}, 仓位应{}'.format(date.strftime('%Y/%m/%d'),title_desc[score][0],title_desc[score][1])
@@ -831,7 +831,7 @@ def main():
 		performance(conn,date,True)
 		continuous_limit_up_stocks(conn,date,True)
 		strong_industries(conn,date,True)
-		strong_concepts(conn,date)
+		strong_concepts(conn,date,True)
 		strong_week_graph(conn,date,True)
 		#break_ma(conn,date)
 		continuous_rise_stocks(conn,date,True)
