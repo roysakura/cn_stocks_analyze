@@ -394,7 +394,7 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 		if len(limit_up_combined) in key:
 			title = u"{} {}".format(date.strftime("%Y/%m/%d"),item)
 
-	layout = dict(font=dict(size=14),title=dict(text=title,x=0.055,y=0.945),margin=dict(l=20,r=20,b=30,t=100),height=len(limit_up_combined)*45+220)
+	layout = dict(font=dict(size=14),title=dict(text=title,x=0.055,y=0.96),margin=dict(l=20,r=20,b=30,t=100),height=len(limit_up_combined)*45+220)
 
 	data = [trace]
 
