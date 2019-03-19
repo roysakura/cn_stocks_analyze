@@ -40,6 +40,7 @@ def main():
 	continuous_rise_stocks(conn,today,True)
 	top_rise_down(conn,today,True)
 	signal_trend(conn,today,True)
+	strong_industries_concepts_combine(conn,today,True)
 
 	conn.close()
 		#continuous_limit_up_stocks()
