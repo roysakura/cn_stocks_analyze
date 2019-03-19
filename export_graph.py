@@ -671,7 +671,7 @@ def strong_industries_concepts_combine(conn,date=datetime.datetime.today(),cloud
 	for x in strong_stocks['intersect_concepts'].values:
 		total_height_ref+=len(x)
 
-	layout = dict(font=dict(size=13),title=dict(text=u"{}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),x=0.055,y=0.94),margin=dict(l=20,r=20,b=30,t=100),height=(total_height_ref)*35+220)
+	layout = dict(font=dict(size=13),title=dict(text=u"{}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),x=0.055,y=0.94),margin=dict(l=20,r=20,b=30,t=100),height=(total_height_ref)*45+220)
 
 	data = [trace]
 
@@ -972,16 +972,16 @@ def main():
 		date = sys.argv[1:]
 		date = datetime.datetime.strptime(date[0], '%Y-%m-%d')
 		print('Exporting Graph For Date {}...\n'.format(date))
-		performance(conn,date,True)
-		continuous_limit_up_stocks(conn,date,True)
-		strong_industries(conn,date,True)
-		strong_concepts(conn,date,True)
-		strong_week_graph(conn,date,True)
-		#break_ma(conn,date)
-		continuous_rise_stocks(conn,date,True)
-		top_rise_down(conn,date,True)
-		ceil_first(conn,date,True)
-		signal_trend(conn,date,True)
+		#performance(conn,date,True)
+		#continuous_limit_up_stocks(conn,date,True)
+		#strong_industries(conn,date,True)
+		#strong_concepts(conn,date,True)
+		#strong_week_graph(conn,date,True)
+		##break_ma(conn,date)
+		#continuous_rise_stocks(conn,date,True)
+		#top_rise_down(conn,date,True)
+		#ceil_first(conn,date,True)
+		#signal_trend(conn,date,True)
 		strong_industries_concepts_combine(conn,date,True)
 		#strong_industries_concepts_combine_candidates(conn,date,True)
 	else:
