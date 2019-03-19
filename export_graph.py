@@ -318,7 +318,7 @@ def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
 	font=dict(size=[30,30,30]),height=45),
 	cells=dict(values=[candidates.code, candidates.name,candidates.industry]
 	,font=dict(size=[30,30,30]),height=45,
-	fill=dict(color='#83C6C4')))
+	fill=dict(color='#e65a4c')))
 
 	layout = dict(font=dict(size=13),title=dict(text=u"{}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),x=0.055,y=0.945),margin=dict(l=20,r=20,b=30,t=100),height=len(candidates)*45+220)
 
@@ -646,27 +646,32 @@ def strong_industries_concepts_combine(conn,date=datetime.datetime.today(),cloud
 	for n,g in stocks_60.groupby('industry'):
 		industry_top[n] = len(g)
 
-	concept_top_5 = (list(sorted(concept_top.items(), key=lambda kv: kv[1],reverse=True))[:3])
-	industry_top_5 = (list(sorted(industry_top.items(), key=lambda kv: kv[1],reverse=True))[:3])
+	concept_top_5 = (list(sorted(concept_top.items(), key=lambda kv: kv[1],reverse=True))[:5])
+	industry_top_5 = (list(sorted(industry_top.items(), key=lambda kv: kv[1],reverse=True))[:5])
 
 	concept_top_5 = [x[0] for x in concept_top_5]
 	industry_top_5 =[x[0] for x in industry_top_5]
 
 	stocks_60['has_top_concepts'] = stocks_60['c_name'].map(lambda x: len(set(concept_top_5).intersection(set(x.split(',')))) > 0 if type(x)==str else False)
 	stocks_60['intersect_concepts'] = stocks_60['c_name'].map(lambda x: list(set(concept_top_5).intersection(set(x.split(',')))) if type(x)==str else [])
-
+	stocks_60['intersect_concepts_str'] = stocks_60['intersect_concepts'].map(lambda x: '<br>'.join(x))
 	strong_stocks = stocks_60[stocks_60.industry.isin(industry_top_5) & stocks_60.has_top_concepts==True]
+	strong_stocks = strong_stocks[~(strong_stocks.high==strong_stocks.low)]
 
 	trace = go.Table(
 	columnwidth=[20,30,30],
 	header=dict(values=list([u'代码',u'名称',u'所属行业',u'所属概念']),
 	fill = dict(color='#31A09D'),
 	font=dict(size=[30,30,30,30]),height=45),
-	cells=dict(values=[strong_stocks.code, strong_stocks.name,strong_stocks.industry,strong_stocks.intersect_concepts]
+	cells=dict(values=[strong_stocks.code, strong_stocks.name,strong_stocks.industry,strong_stocks.intersect_concepts_str]
 	,font=dict(size=[30,30,30,20]),height=45,
-	fill=dict(color='#83C6C4')))
+	fill=dict(color='#e65a4c')))
 
-	layout = dict(font=dict(size=13),title=dict(text=u"{}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),x=0.055,y=0.945),margin=dict(l=20,r=20,b=30,t=100),height=len(strong_stocks)*45+220)
+	total_height_ref = 0
+	for x in strong_stocks['intersect_concepts'].values:
+		total_height_ref+=len(x)
+
+	layout = dict(font=dict(size=13),title=dict(text=u"{}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),x=0.055,y=0.94),margin=dict(l=20,r=20,b=30,t=100),height=(total_height_ref)*35+220)
 
 	data = [trace]
 
@@ -838,7 +843,7 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 	fill = dict(color='#31A09D'),
 	font=dict(size=(30,30,30,30)),height=45),
 	cells=dict(values=[continuous_rise_candidate_df.code, continuous_rise_candidate_df.name, continuous_rise_candidate_df.industry,continuous_rise_candidate_df.p_change_str],
-	font=dict(size=[30,30,30,30]),height=45,fill = dict(color='#83C6C4'),),
+	font=dict(size=[30,30,30,30]),height=45,fill = dict(color='#e65a4c'),),
 	)
 
 	layout = dict(font=dict(size=13),title=dict(text=u"{}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),x=0.055,y=0.95),margin=dict(l=20,r=20,b=30,t=100),height=len(continuous_rise_candidate_df)*45+220)
@@ -978,7 +983,7 @@ def main():
 		ceil_first(conn,date,True)
 		signal_trend(conn,date,True)
 		strong_industries_concepts_combine(conn,date,True)
-		strong_industries_concepts_combine_candidates(conn,date,True)
+		#strong_industries_concepts_combine_candidates(conn,date,True)
 	else:
 		#performance(conn)
 		#continuous_limit_up_stocks(conn)
