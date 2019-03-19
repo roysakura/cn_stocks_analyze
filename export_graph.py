@@ -625,6 +625,66 @@ def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	#return top_rds.to_json(orient='index')
 
+def strong_industries_concepts_combine(conn,date=datetime.datetime.today(),cloud_save=False):
+	stocks_60 = pd.read_sql('select * from stocks_60_days',conn)
+	all_stocks = pd.read_sql('select code,name,industry from all_stocks',conn)
+	all_concepts = pd.read_sql('select code,c_name from all_concepts',conn)
+	all_stocks = all_stocks.merge(all_concepts,on='code',how='left')
+	stocks_60 = stocks_60.merge(all_stocks,on='code',how='left')
+	stocks_60['date'] = pd.to_datetime(stocks_60['date'])
+	stocks_60 = stocks_60[stocks_60.date.isin([date]) & stocks_60.islimit==True]
+
+	l = []
+	for x in stocks_60['c_name'].astype(str):
+		l+=x.split(',')
+	l = list(filter(('nan').__ne__, l))
+	concept_top = {}
+	for k,v in dict(Counter(l)).items():
+		concept_top[k] = v
+
+	industry_top = {}
+	for n,g in stocks_60.groupby('industry'):
+		industry_top[n] = len(g)
+
+	concept_top_5 = (list(sorted(concept_top.items(), key=lambda kv: kv[1],reverse=True))[:5])
+	industry_top_5 = (list(sorted(industry_top.items(), key=lambda kv: kv[1],reverse=True))[:5])
+
+	concept_top_5 = [x[0] for x in concept_top_5]
+	industry_top_5 =[x[0] for x in industry_top_5]
+
+	stocks_60['has_top_concepts'] = stocks_60['c_name'].map(lambda x: len(set(concept_top_5).intersection(set(x.split(',')))) > 0 if type(x)==str else False)
+	stocks_60['intersect_concepts'] = stocks_60['c_name'].map(lambda x: list(set(concept_top_5).intersection(set(x.split(',')))) if type(x)==str else [])
+
+	strong_stocks = stocks_60[stocks_60.industry.isin(industry_top_5) & stocks_60.has_top_concepts==True]
+
+	trace = go.Table(
+	columnwidth=[20,30,30],
+	header=dict(values=list([u'代码',u'名称',u'所属行业',u'所属概念']),
+	fill = dict(color='#31A09D'),
+	font=dict(size=[30,30,30,30]),height=45),
+	cells=dict(values=[strong_stocks.code, strong_stocks.name,strong_stocks.industry,strong_stocks.intersect_concepts]
+	,font=dict(size=[30,30,30,20]),height=45,
+	fill=dict(color='#83C6C4')))
+
+	layout = dict(font=dict(size=13),title=dict(text=u"{}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),x=0.055,y=0.95),margin=dict(l=20,r=20,b=30,t=100),height=len(strong_stocks)*45+220)
+
+	data = [trace]
+
+	fig = go.Figure(data=data,layout=layout)
+
+	iplot(fig)
+	directory = os.path.join(home,"Documents","cnstocks")
+	file = os.path.join(home,"Documents","cnstocks","{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['STRONG_COMBINE']))
+	if not os.path.exists(directory):
+		os.makedirs(directory)
+	pio.write_image(fig, file,scale=2)
+	combine_title(str(settings.GRAPH['STRONG_COMBINE'])+'_title.png',file)
+	draw_underline(file,xy=[(0,110),(1400,110)],width=5)
+	if cloud_save:
+		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['STRONG_COMBINE'])
+		bucket.put_object_from_file(file_name,file)
+
+
 def break_ma(conn,date=datetime.datetime.today(),cloud_save=False):
 	pro = ts.pro_api()
 	stocks_60 = pd.read_sql('select * from stocks_60_days',conn)
@@ -858,6 +918,7 @@ def main():
 		top_rise_down(conn,date,True)
 		ceil_first(conn,date,True)
 		signal_trend(conn,date,True)
+		strong_industries_concepts_combine(conn,date,True)
 	else:
 		#performance(conn)
 		#continuous_limit_up_stocks(conn)
