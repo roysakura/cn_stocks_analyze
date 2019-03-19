@@ -646,8 +646,8 @@ def strong_industries_concepts_combine(conn,date=datetime.datetime.today(),cloud
 	for n,g in stocks_60.groupby('industry'):
 		industry_top[n] = len(g)
 
-	concept_top_5 = (list(sorted(concept_top.items(), key=lambda kv: kv[1],reverse=True))[:5])
-	industry_top_5 = (list(sorted(industry_top.items(), key=lambda kv: kv[1],reverse=True))[:5])
+	concept_top_5 = (list(sorted(concept_top.items(), key=lambda kv: kv[1],reverse=True))[:3])
+	industry_top_5 = (list(sorted(industry_top.items(), key=lambda kv: kv[1],reverse=True))[:3])
 
 	concept_top_5 = [x[0] for x in concept_top_5]
 	industry_top_5 =[x[0] for x in industry_top_5]
