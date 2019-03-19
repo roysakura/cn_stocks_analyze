@@ -726,7 +726,7 @@ def strong_industries_concepts_combine_candidates(conn,date=datetime.datetime.to
 	,font=dict(size=[20,20,20,18,20]),height=45,
 	fill=dict(color='#83C6C4')))
 
-	layout = dict(font=dict(size=13),title=dict(text=u"强势行业{};强势概念{}".format(','.join(industry_top_5),','.join(concept_top_5)),x=0.055,y=0.95),margin=dict(l=20,r=20,b=30,t=100),height=len(strong_stocks)*45+220)
+	layout = dict(font=dict(size=13),title=dict(text=u"强势行业{}<br>强势概念{}".format(','.join(industry_top_5),','.join(concept_top_5)),x=0.055,y=0.98),margin=dict(l=20,r=20,b=30,t=100),height=len(strong_stocks)*45+220)
 
 	data = [trace]
 
@@ -739,7 +739,6 @@ def strong_industries_concepts_combine_candidates(conn,date=datetime.datetime.to
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
 	combine_title(str(settings.GRAPH['STRONG_COMBINE_CANDIDATE'])+'_title.png',file)
-	draw_underline(file,xy=[(0,110),(1400,110)],width=5)
 	if cloud_save:
 		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['STRONG_COMBINE_CANDIDATE'])
 		bucket.put_object_from_file(file_name,file)
