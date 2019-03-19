@@ -715,7 +715,7 @@ def strong_industries_concepts_combine_candidates(conn,date=datetime.datetime.to
 	stocks_candidate['has_top_concepts'] = stocks_candidate['c_name'].map(lambda x: len(set(concept_top_5).intersection(set(x.split(',')))) > 0 if type(x)==str else False)
 	stocks_candidate['intersect_concepts'] = stocks_candidate['c_name'].map(lambda x: list(set(concept_top_5).intersection(set(x.split(',')))) if type(x)==str else [])
 	
-	strong_stocks = stocks_candidate[stocks_candidate.industry.isin(industry_top_5) & stocks_candidate.has_top_concepts==True]
+	strong_stocks = stocks_candidate[stocks_candidate.industry.isin(industry_top_5) | stocks_candidate.has_top_concepts==True]
 	strong_stocks['p_change']  = strong_stocks['p_change'].map(lambda x: '{}%'.format(round(x,2)))
 	trace = go.Table(
 	columnwidth=[20,30,30],
@@ -726,7 +726,7 @@ def strong_industries_concepts_combine_candidates(conn,date=datetime.datetime.to
 	,font=dict(size=[20,20,20,18,20]),height=45,
 	fill=dict(color='#83C6C4')))
 
-	layout = dict(font=dict(size=13),title=dict(text=u"{}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),x=0.055,y=0.95),margin=dict(l=20,r=20,b=30,t=100),height=len(strong_stocks)*45+220)
+	layout = dict(font=dict(size=13),title=dict(text=u"强势行业{};强势概念{}".format(','.join(industry_top_5),','.join(concept_top_5)),x=0.055,y=0.95),margin=dict(l=20,r=20,b=30,t=100),height=len(strong_stocks)*45+220)
 
 	data = [trace]
 
