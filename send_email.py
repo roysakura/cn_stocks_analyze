@@ -37,6 +37,7 @@ def send(date=datetime.datetime.today()):
     today = date.strftime('%Y%m%d')
     sender = '110672023@qq.com'
     gmail_password = 'cflgbqogaggmbibb'
+    #recipients = ['110672023@qq.com']
     recipients = ['110672023@qq.com','150096055@qq.com']
 
     # Create the enclosing (outer) message
@@ -56,6 +57,7 @@ def send(date=datetime.datetime.today()):
                     settings.GRAPH['STRONG_INDUSTRIES_2'],
                     settings.GRAPH['STRONG_INDUSTRIES_3'],
                     settings.GRAPH['STRONG_INDUSTRIES_4'],
+                    settings.GRAPH['STRONG_COMBINE'],
                     settings.IMGTEMPLATE['BANNER_INDI'],
                     settings.GRAPH['LEAD_LIMIT'],
                     settings.GRAPH['RANKING_1'],
