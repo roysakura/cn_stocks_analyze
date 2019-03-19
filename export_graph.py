@@ -143,9 +143,9 @@ def strong_week_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 		stats[n]['less_5%'] = len(g[g.p_change<=-5.0])
 
 	data = pd.DataFrame.from_dict(stats, orient='index')
+	data.index.names = ['date']
 	data = data.reset_index()
 
-	data.columns = ['date','over_5%','less_5%']
 	data.sort_values('date',ascending = False,inplace=True)
 	graph_two = []
 
