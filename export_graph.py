@@ -320,7 +320,7 @@ def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
 	,font=dict(size=[30,30,30]),height=45,
 	fill=dict(color='#83C6C4')))
 
-	layout = dict(font=dict(size=13),title=dict(text=u"{}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),x=0.055,y=0.95),margin=dict(l=20,r=20,b=30,t=100),height=len(candidates)*45+220)
+	layout = dict(font=dict(size=13),title=dict(text=u"{}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),x=0.055,y=0.945),margin=dict(l=20,r=20,b=30,t=100),height=len(candidates)*45+220)
 
 	data = [trace]
 
@@ -394,7 +394,7 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 		if len(limit_up_combined) in key:
 			title = u"{} {}".format(date.strftime("%Y/%m/%d"),item)
 
-	layout = dict(font=dict(size=14),title=dict(text=title,x=0.055,y=0.96),margin=dict(l=20,r=20,b=30,t=100),height=len(limit_up_combined)*45+220)
+	layout = dict(font=dict(size=14),title=dict(text=title,x=0.055,y=0.975),margin=dict(l=20,r=20,b=30,t=100),height=len(limit_up_combined)*45+220)
 
 	data = [trace]
 
@@ -666,7 +666,7 @@ def strong_industries_concepts_combine(conn,date=datetime.datetime.today(),cloud
 	,font=dict(size=[30,30,30,20]),height=45,
 	fill=dict(color='#83C6C4')))
 
-	layout = dict(font=dict(size=13),title=dict(text=u"{}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),x=0.055,y=0.95),margin=dict(l=20,r=20,b=30,t=100),height=len(strong_stocks)*45+220)
+	layout = dict(font=dict(size=13),title=dict(text=u"{}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),x=0.055,y=0.945),margin=dict(l=20,r=20,b=30,t=100),height=len(strong_stocks)*45+220)
 
 	data = [trace]
 
