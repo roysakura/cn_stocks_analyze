@@ -318,7 +318,7 @@ def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
 	font=dict(size=[30,30,30]),height=45),
 	cells=dict(values=[candidates.code, candidates.name,candidates.industry]
 	,font=dict(size=[30,30,30]),height=45,
-	fill=dict(color='#e65a4c')))
+	fill=dict(color='#F3361E')))
 
 	layout = dict(font=dict(size=13),title=dict(text=u"{}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),x=0.055,y=0.945),margin=dict(l=20,r=20,b=30,t=100),height=len(candidates)*45+220)
 
@@ -654,7 +654,7 @@ def strong_industries_concepts_combine(conn,date=datetime.datetime.today(),cloud
 
 	stocks_60['has_top_concepts'] = stocks_60['c_name'].map(lambda x: len(set(concept_top_5).intersection(set(x.split(',')))) > 0 if type(x)==str else False)
 	stocks_60['intersect_concepts'] = stocks_60['c_name'].map(lambda x: list(set(concept_top_5).intersection(set(x.split(',')))) if type(x)==str else [])
-	stocks_60['intersect_concepts_str'] = stocks_60['intersect_concepts'].map(lambda x: '<br>'.join(x))
+	stocks_60['intersect_concepts_str'] = stocks_60['intersect_concepts'].map(lambda x: x[0] if len(x)>0 else '')
 	strong_stocks = stocks_60[stocks_60.industry.isin(industry_top_5) & stocks_60.has_top_concepts==True]
 	strong_stocks = strong_stocks[~(strong_stocks.high==strong_stocks.low)]
 
@@ -843,7 +843,7 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 	fill = dict(color='#31A09D'),
 	font=dict(size=(30,30,30,30)),height=45),
 	cells=dict(values=[continuous_rise_candidate_df.code, continuous_rise_candidate_df.name, continuous_rise_candidate_df.industry,continuous_rise_candidate_df.p_change_str],
-	font=dict(size=[30,30,30,30]),height=45,fill = dict(color='#e65a4c'),),
+	font=dict(size=[30,30,30,30]),height=45,fill = dict(color='#F3361E'),),
 	)
 
 	layout = dict(font=dict(size=13),title=dict(text=u"{}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),x=0.055,y=0.95),margin=dict(l=20,r=20,b=30,t=100),height=len(continuous_rise_candidate_df)*45+220)
@@ -972,18 +972,18 @@ def main():
 		date = sys.argv[1:]
 		date = datetime.datetime.strptime(date[0], '%Y-%m-%d')
 		print('Exporting Graph For Date {}...\n'.format(date))
-		#performance(conn,date,True)
-		#continuous_limit_up_stocks(conn,date,True)
-		#strong_industries(conn,date,True)
-		#strong_concepts(conn,date,True)
-		#strong_week_graph(conn,date,True)
-		##break_ma(conn,date)
-		#continuous_rise_stocks(conn,date,True)
-		#top_rise_down(conn,date,True)
-		#ceil_first(conn,date,True)
-		#signal_trend(conn,date,True)
+		performance(conn,date,True)
+		continuous_limit_up_stocks(conn,date,True)
+		strong_industries(conn,date,True)
+		strong_concepts(conn,date,True)
+		strong_week_graph(conn,date,True)
+		#break_ma(conn,date)
+		continuous_rise_stocks(conn,date,True)
+		top_rise_down(conn,date,True)
+		ceil_first(conn,date,True)
+		signal_trend(conn,date,True)
 		strong_industries_concepts_combine(conn,date,True)
-		#strong_industries_concepts_combine_candidates(conn,date,True)
+		strong_industries_concepts_combine_candidates(conn,date,True)
 	else:
 		#performance(conn)
 		#continuous_limit_up_stocks(conn)
