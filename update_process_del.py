@@ -33,6 +33,7 @@ def main():
 	#strong_industries(conn,today,True)
 	#break_ma(conn,today,True)
 	#strong_concepts(conn,today,True)
+	strong_industries_concepts_combine(conn,today,True)
 	strong_industries_concepts_combine_candidates(conn,today,True)
 
 	conn.close()

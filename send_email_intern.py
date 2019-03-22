@@ -48,20 +48,11 @@ def send_intern(date=datetime.datetime.today()):
 
     # List of attachments
     attachments = [ settings.IMGTEMPLATE['BANNER_INDI'],
+                    settings.GRAPH['STRONG_COMBINE'],
                     settings.GRAPH['STRONG_COMBINE_CANDIDATE'],
                     ]
     combine_files = []
-    for i in attachments:
-        if type(i)==int:
-            file = os.path.join(home,"Documents","{}.jpg".format(i))
-            result = bucket.get_object_to_file('{}_{}.jpg'.format(today,i), file)
-            mark = Image.open('imgs/watermark.png', 'r')
-            img = Image.open(file)
-            img = watermark(img, mark, 'scale', 0.1)
-            img.save(file, format='JPEG', quality=90)
-            combine_files.append(file)
-        else:
-            combine_files.append(i)
+    combine_files.append(i)
 
     combine(date,combine_files)       
     final_file = os.path.join(home,"Documents","{}_combine.jpg".format(today))
