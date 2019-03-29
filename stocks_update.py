@@ -141,23 +141,27 @@ def update_data_base_fast():
 	stocks_60_fast = {}
 	i=0
 	for code,g in last_125.groupby('code'):
-		current_stock = g.drop_duplicates(subset=['date'])
-		stock = today_all.loc[code][['open','high','trade','low','volume','changepercent']]
-		current_stock['datetime'] = pd.to_datetime(current_stock['date'])
-		current_stock = current_stock[current_stock['datetime'] < today]
-		current_stock.drop(['datetime'],axis=1,inplace=True)
-		df_stock = pd.DataFrame([stock])
-		df_stock['date'] = today.strftime('%Y-%m-%d 00:00:00')
-		df_stock['code'] = code
-		df_stock.columns = ['open','high','close','low','volume','p_change','date','code']
-		df_combine = pd.concat([current_stock.sort_values('date'),df_stock])
-		df_combine.drop_duplicates(subset='date',inplace=True)
-		df_combine['l_close'] = df_combine['close'].shift(1)
-		df_combine['islimit'] = df_combine.apply(lambda x: 1 if (x['volume']>0 and x['l_close']>0 and x['close']>=np.around((x['l_close']*1.1),decimals=2)) else (-1 if (x['volume']>0 and x['l_close']>0 and x['close']<=np.around((x['l_close']*0.9),decimals=2)) else 0),axis=1)
-		df_combine['date'] = pd.to_datetime(df_combine['date'])
-		mask_60 = (df_combine['date']>trade_date.iloc[60]) & (df_combine['date']<=trade_date.iloc[0])
-		stocks_60_fast[code]= df_combine.loc[mask_60]
-		stocks_125_fast[code] = df_combine
+		try:
+			current_stock = g.drop_duplicates(subset=['date'])
+			stock = today_all.loc[code][['open','high','trade','low','volume','changepercent']]
+			current_stock['datetime'] = pd.to_datetime(current_stock['date'])
+			current_stock = current_stock[current_stock['datetime'] < today]
+			current_stock.drop(['datetime'],axis=1,inplace=True)
+			df_stock = pd.DataFrame([stock])
+			df_stock['date'] = today.strftime('%Y-%m-%d 00:00:00')
+			df_stock['code'] = code
+			df_stock.columns = ['open','high','close','low','volume','p_change','date','code']
+			df_combine = pd.concat([current_stock.sort_values('date'),df_stock])
+			df_combine.drop_duplicates(subset='date',inplace=True)
+			df_combine['l_close'] = df_combine['close'].shift(1)
+			df_combine['islimit'] = df_combine.apply(lambda x: 1 if (x['volume']>0 and x['l_close']>0 and x['close']>=np.around((x['l_close']*1.1),decimals=2)) else (-1 if (x['volume']>0 and x['l_close']>0 and x['close']<=np.around((x['l_close']*0.9),decimals=2)) else 0),axis=1)
+			df_combine['date'] = pd.to_datetime(df_combine['date'])
+			mask_60 = (df_combine['date']>trade_date.iloc[60]) & (df_combine['date']<=trade_date.iloc[0])
+			stocks_60_fast[code]= df_combine.loc[mask_60]
+			stocks_125_fast[code] = df_combine
+		except Exception as e:
+			print('e->{}'.format(e))
+			continue
 		pbar.update(i + 1)
 		i+=1
 
@@ -201,21 +205,25 @@ def update_data_base_fast_simple():
 	stocks_60_fast = {}
 	i=0
 	for code,g in last_60.groupby('code'):
-		current_stock = g.drop_duplicates(subset=['date'])
-		stock = today_all.loc[code][['open','high','trade','low','volume','changepercent']]
-		current_stock['datetime'] = pd.to_datetime(current_stock['date'])
-		current_stock = current_stock[current_stock['datetime'] < today]
-		current_stock.drop(['datetime'],axis=1,inplace=True)
-		df_stock = pd.DataFrame([stock])
-		df_stock['date'] = today.strftime('%Y-%m-%d 00:00:00')
-		df_stock['code'] = code
-		df_stock.columns = ['open','high','close','low','volume','p_change','date','code']
-		df_combine = pd.concat([current_stock.sort_values('date'),df_stock])
-		df_combine.drop_duplicates(subset='date',inplace=True)
-		df_combine['l_close'] = df_combine['close'].shift(1)
-		df_combine['islimit'] = df_combine.apply(lambda x: 1 if (x['volume']>0 and x['l_close']>0 and x['close']>=np.around((x['l_close']*1.1),decimals=2)) else (-1 if (x['volume']>0 and x['l_close']>0 and x['close']<=np.around((x['l_close']*0.9),decimals=2)) else 0),axis=1)
-		df_combine['date'] = pd.to_datetime(df_combine['date'])
-		stocks_60_fast[code]= df_combine
+		try:
+			current_stock = g.drop_duplicates(subset=['date'])
+			stock = today_all.loc[code][['open','high','trade','low','volume','changepercent']]
+			current_stock['datetime'] = pd.to_datetime(current_stock['date'])
+			current_stock = current_stock[current_stock['datetime'] < today]
+			current_stock.drop(['datetime'],axis=1,inplace=True)
+			df_stock = pd.DataFrame([stock])
+			df_stock['date'] = today.strftime('%Y-%m-%d 00:00:00')
+			df_stock['code'] = code
+			df_stock.columns = ['open','high','close','low','volume','p_change','date','code']
+			df_combine = pd.concat([current_stock.sort_values('date'),df_stock])
+			df_combine.drop_duplicates(subset='date',inplace=True)
+			df_combine['l_close'] = df_combine['close'].shift(1)
+			df_combine['islimit'] = df_combine.apply(lambda x: 1 if (x['volume']>0 and x['l_close']>0 and x['close']>=np.around((x['l_close']*1.1),decimals=2)) else (-1 if (x['volume']>0 and x['l_close']>0 and x['close']<=np.around((x['l_close']*0.9),decimals=2)) else 0),axis=1)
+			df_combine['date'] = pd.to_datetime(df_combine['date'])
+			stocks_60_fast[code]= df_combine
+		except Exception as e:
+			print('e->{}'.format(e))
+			continue
 		pbar.update(i + 1)
 		i+=1
 
