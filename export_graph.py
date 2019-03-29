@@ -965,7 +965,16 @@ def signal_trend(conn,date=datetime.datetime.today(),cloud_save=False):
 	else:
 		signal = 0
 
-	offset = (1 if len(yesterday_top_break)>=80 else (-1 if len(yesterday_top_break)<30 else 0))
+	data_today = pd.read_sql('select p_change from stocks_60_days where volume>0 and date=\'{}\''.format(date),conn)
+	hist_data_today = np.histogram(data_today['p_change'],bins=20,range=(-10.5,11))
+
+	market_offset = 0
+	if round(hist_data_today[1][np.argmax(hist_data_today[0])],1)<-4:
+		market_offset = -2
+	elif round(hist_data_today[1][np.argmax(hist_data_today[0])],1)<-2:
+		market_offset = -1
+
+	offset = (1 if len(yesterday_top_break)>=100 else (-1 if len(yesterday_top_break)<30 else 0))+market_offset
 	score = (0+offset if signal<0.20 else (1+offset if signal>=0.2 and signal<0.4 else (2+offset if signal>=0.4 and signal<0.6 else (3+offset if signal>=0.6 and signal<0.8 else 4+offset))))
 	score =  0 if score<0 else (4 if score>4 else score)
 	ttfont = ImageFont.truetype("imgs/SIMHEI.TTF",36)
