@@ -369,6 +369,29 @@ def update_folder_concepts():
 	concepts_df.sort_values('code',inplace=True)
 	concepts_df.to_sql('all_concepts',conn,if_exists='replace',index=False)
 
+def update_folder_industry():
+	industry_dict = {}
+	for root, directories, filenames in os.walk('data/industry/'):
+		for filename in filenames:
+			c = pd.read_csv(u'data/industry/{}'.format(filename),sep='\t', encoding='gb2312')
+			industry_dict[filename[:-12]]=','.join( [str(x) for x in c.iloc[:-1][u'代码'].values.tolist()])
+
+	industry_df = pd.DataFrame.from_dict(industry_dict,orient='index')
+	industry_df.columns = ['code']
+
+	industry_dict = {}
+	for n in industry_df.index:
+		for code in industry_df.loc[n]['code'].split(','):
+			industry_dict.setdefault(code,'')
+			industry_dict[code] += n+','
+
+	industry_df = pd.DataFrame.from_dict(industry_dict,orient='index')
+	industry_df = industry_df.reset_index()
+	industry_df.columns = ['code','industry']
+	industry_df['industry'] = industry_df['industry'].map(lambda x:x[:-1])
+	industry_df.sort_values('code',inplace=True)
+	industry_df.to_sql('local_industry',conn,if_exists='replace',index=False)
+
 def clean_up_today(date=datetime.datetime.today()):
 	conn = sqlite3.connect('cn_stocks.db')
 	cur = conn.cursor()
