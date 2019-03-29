@@ -131,7 +131,9 @@ def performance(conn,date=datetime.datetime.today(),cloud_save=False):
 
 def strong_week_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 	daterange = get_dayrange(startfrom=date,num=10)
-	all_stocks =pd.read_sql('select code,name,industry from all_stocks',conn)
+	all_stocks =pd.read_sql('select code,name from all_stocks',conn)
+	local_industry = pd.read_sql('select code,industry from local_industry',conn)
+	all_stocks = all_stocks.merge(local_industry,on='code',how='left')
 	stocks_60 =pd.read_sql('select * from stocks_60_days where date<=\'{} 00:00:00\' and date>=\'{} 00:00:00\''.format(daterange[0].strftime('%Y-%m-%d'),daterange[9].strftime('%Y-%m-%d')),conn)
 	
 	stats = {}
@@ -292,7 +294,9 @@ def top_break_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 # check if it's ceiling at certain time
 def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
 	daterange = get_dayrange(startfrom=date,num=2)
-	all_stocks =pd.read_sql('select code,name,industry from all_stocks',conn)
+	all_stocks =pd.read_sql('select code,name from all_stocks',conn)
+	local_industry = pd.read_sql('select code,industry from local_industry',conn)
+	all_stocks = all_stocks.merge(local_industry,on='code',how='left')
 	first_limit_up =pd.read_sql('select * from stocks_60_days where islimit=1 and date<=\'{} 00:00:00\' and date>=\'{} 00:00:00\''.format(daterange[0].strftime('%Y-%m-%d'),daterange[1].strftime('%Y-%m-%d')),conn).drop_duplicates(subset=['code'],keep=False)
 	first_limit_up = first_limit_up[(first_limit_up.date==date.strftime('%Y-%m-%d 00:00:00')) & (first_limit_up.close!=first_limit_up.open)]
 	today_ceil_first = pd.read_sql('select distinct code from ceiling_tick where date=\'{}\''.format(date.strftime('%Y-%m-%d')),conn)
@@ -346,7 +350,9 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 				  range(31,61):u'无脑打连板的人太多,游资和机构接力连板',
 				  range(61,1000):u'人气爆棚,全民接力连板,股市的盛宴'}
 
-	all_stocks =pd.read_sql('select code,name,industry from all_stocks',conn).set_index('code')
+	all_stocks =pd.read_sql('select code,name from all_stocks',conn)
+	local_industry = pd.read_sql('select code,industry from local_industry',conn)
+	all_stocks = all_stocks.merge(local_industry,on='code',how='left').set_index('code')
 	today_limit_up_code =pd.read_sql('select code from stocks_60_days where islimit=1 and date=\'{}\''.format(date),conn)
 	stock_limit_up_record = {}
 	for stock_code in today_limit_up_code['code'].tolist():
@@ -415,7 +421,9 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	days_range = 20
 	stocks_60 = pd.read_sql('select * from stocks_60_days',conn)
-	all_stocks = pd.read_sql('select code,name,industry from all_stocks',conn)
+	all_stocks = pd.read_sql('select code,name from all_stocks',conn)
+	local_industry = pd.read_sql('select code,industry from local_industry',conn)
+	all_stocks = all_stocks.merge(local_industry,on='code',how='left')
 	stocks_60 = stocks_60.merge(all_stocks,on='code',how='left')
 	pro = ts.pro_api()
 	d_range = get_dayrange(date,num=days_range)
@@ -448,7 +456,7 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	top_rds = top_rds[:(5*3)] # Five days records
 	colors = cl.scales['5']['seq']['YlOrRd']
 	top_rds['color'] = LabelEncoder().fit_transform(top_rds['date'])
-	colors = ['#FDC6A0','#FCA971','#FB8D42','#F55E4B','#F3361E']
+	colors = ['#FBF1D0','#FDE4C5','#FEE2A9','#FDC6A0','#FCA971','#FCA971','#EC9900','#F57E14','#F55F37','#F3501E','#F3361E']
 	top_rds['color'] = top_rds['color'].map(lambda x:colors[x])
 	trace = go.Table(
 	columnwidth=[12,20,8],
@@ -516,7 +524,9 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 	days_range = 20
 	stocks_60 = pd.read_sql('select * from stocks_60_days',conn)
-	all_stocks = pd.read_sql('select code,name,industry from all_stocks',conn)
+	all_stocks = pd.read_sql('select code,name from all_stocks',conn)
+	local_industry = pd.read_sql('select code,industry from local_industry',conn)
+	all_stocks = all_stocks.merge(local_industry,on='code',how='left')
 	all_concepts = pd.read_sql('select code,c_name from all_concepts',conn)
 	all_stocks = all_stocks.merge(all_concepts,on='code',how='left')
 	stocks_60 = stocks_60.merge(all_stocks,on='code',how='left')
@@ -558,7 +568,7 @@ def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 	top_rds = top_rds[:(5*3)] # Five days records
 	colors = cl.scales['5']['seq']['YlOrRd']
 	top_rds['color'] = LabelEncoder().fit_transform(top_rds['date'])
-	colors = ['#FDC6A0','#FCA971','#FB8D42','#F55E4B','#F3361E']
+	colors = ['#FBF1D0','#FDE4C5','#FEE2A9','#FDC6A0','#FCA971','#FCA971','#EC9900','#F57E14','#F55F37','#F3501E','#F3361E']
 	top_rds['color'] = top_rds['color'].map(lambda x:colors[x])
 	trace = go.Table(
 	columnwidth=[12,20,8],
@@ -627,7 +637,9 @@ def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 
 def strong_industries_concepts_combine(conn,date=datetime.datetime.today(),cloud_save=False):
 	stocks_60 = pd.read_sql('select * from stocks_60_days',conn)
-	all_stocks = pd.read_sql('select code,name,industry from all_stocks',conn)
+	all_stocks = pd.read_sql('select code,name from all_stocks',conn)
+	local_industry = pd.read_sql('select code,industry from local_industry',conn)
+	all_stocks = all_stocks.merge(local_industry,on='code',how='left')
 	all_concepts = pd.read_sql('select code,c_name from all_concepts',conn)
 	all_stocks = all_stocks.merge(all_concepts,on='code',how='left')
 	stocks_60 = stocks_60.merge(all_stocks,on='code',how='left')
@@ -691,7 +703,9 @@ def strong_industries_concepts_combine(conn,date=datetime.datetime.today(),cloud
 
 def strong_industries_concepts_combine_candidates(conn,date=datetime.datetime.today(),cloud_save=False):
 	stocks_60 = pd.read_sql('select * from stocks_60_days',conn)
-	all_stocks = pd.read_sql('select code,name,industry from all_stocks',conn)
+	all_stocks = pd.read_sql('select code,name from all_stocks',conn)
+	local_industry = pd.read_sql('select code,industry from local_industry',conn)
+	all_stocks = all_stocks.merge(local_industry,on='code',how='left')
 	all_concepts = pd.read_sql('select code,c_name from all_concepts',conn)
 	all_stocks = all_stocks.merge(all_concepts,on='code',how='left')
 	stocks_60 = stocks_60.merge(all_stocks,on='code',how='left')
@@ -752,7 +766,9 @@ def strong_industries_concepts_combine_candidates(conn,date=datetime.datetime.to
 def break_ma(conn,date=datetime.datetime.today(),cloud_save=False):
 	pro = ts.pro_api()
 	stocks_60 = pd.read_sql('select * from stocks_60_days',conn)
-	all_stocks = pd.read_sql('select code,name,industry from all_stocks',conn)
+	all_stocks = pd.read_sql('select code,name from all_stocks',conn)
+	local_industry = pd.read_sql('select code,industry from local_industry',conn)
+	all_stocks = all_stocks.merge(local_industry,on='code',how='left')
 	month_before = (date-timedelta(days=30)).strftime("%Y%m%d")
 	cal = pro.trade_cal(start_date=month_before, end_date=date.strftime("%Y%m%d")).sort_values('cal_date',ascending=False)
 	two_days = [datetime.datetime.strptime(x,"%Y%m%d") for x in cal[cal.is_open==1][:2].cal_date.values.tolist()]
@@ -809,7 +825,9 @@ def break_ma(conn,date=datetime.datetime.today(),cloud_save=False):
 def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False):
 	continuous_rise = {}
 	daterange = get_dayrange(startfrom=date,num=31)
-	all_stocks = pd.read_sql('select code,name,industry from all_stocks',conn)
+	all_stocks = pd.read_sql('select code,name from all_stocks',conn)
+	local_industry = pd.read_sql('select code,industry from local_industry',conn)
+	all_stocks = all_stocks.merge(local_industry,on='code',how='left')
 	stocks_60 = pd.read_sql('select * from stocks_60_days where volume>0',conn)
 	stocks_60['date'] = pd.to_datetime(stocks_60['date'])
 	stocks_60 = stocks_60[stocks_60.date.isin(daterange)]
@@ -867,7 +885,9 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 	pro = ts.pro_api()
 	stocks_60 = pd.read_sql('select * from stocks_60_days where volume>0',conn)
-	all_stocks = pd.read_sql('select code,name,industry from all_stocks',conn)
+	all_stocks = pd.read_sql('select code,name from all_stocks',conn)
+	local_industry = pd.read_sql('select code,industry from local_industry',conn)
+	all_stocks = all_stocks.merge(local_industry,on='code',how='left')
 	d_range = get_dayrange(startfrom=date,num=59)
 	stocks_60['date'] = pd.to_datetime(stocks_60['date'])
 	stocks_60_sub_5_days = stocks_60[stocks_60.date.isin(d_range)].sort_values('date',ascending=False)
@@ -977,7 +997,7 @@ def main():
 		strong_industries(conn,date,True)
 		strong_concepts(conn,date,True)
 		strong_week_graph(conn,date,True)
-		#break_ma(conn,date)
+		##break_ma(conn,date)
 		continuous_rise_stocks(conn,date,True)
 		top_rise_down(conn,date,True)
 		ceil_first(conn,date,True)
