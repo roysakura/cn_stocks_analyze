@@ -16,8 +16,12 @@ def update_folder_industry():
 	industry_dict = {}
 	for root, directories, filenames in os.walk('data/industry/'):
 		for filename in filenames:
-			c = pd.read_csv(u'data/industry/{}'.format(filename),sep='\t', encoding='gb2312')
-			industry_dict[filename[:-12]]=','.join( [str(x) for x in c.iloc[:-1][u'代码'].values.tolist()])
+			try:
+				c = pd.read_csv(u'data/industry/{}'.format(filename),sep='\t', encoding='gb2312')
+				industry_dict[filename[:-12]]=','.join( [str(x) for x in c.iloc[:-1][u'代码'].values.tolist()])
+			except Exception as e:
+				c = pd.read_csv(u'data/industry/{}'.format(filename),sep='\t')
+				industry_dict[filename[:-12]]=','.join( [str(x) for x in c.iloc[:-1,0].values.tolist()])
 
 	industry_df = pd.DataFrame.from_dict(industry_dict,orient='index')
 	industry_df.columns = ['code']
