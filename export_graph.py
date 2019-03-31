@@ -36,6 +36,14 @@ def combine_title(title_name,file):
 	new_im.paste(title_tmp,(0,0),0)
 	new_im.save(file)
 
+
+def combine_subline(subline,file):
+	ttfont = ImageFont.truetype("imgs/SIMHEI.TTF",36)
+	im = Image.open(file)
+	draw = ImageDraw.Draw(im)
+	draw.text((75,65),subline,fill=(19,29,33),font=ttfont)
+	im.save(file)
+
 def frange(x, y, jump):
 	l = []
 	while x < y:
@@ -85,7 +93,7 @@ def performance(conn,date=datetime.datetime.today(),cloud_save=False):
 	text=hist_data_today_all_changepercent_over_0[0],
 	textposition = 'outside',
 	marker=dict(
-	color='#F3361E',
+	color='#E05744',
 	)
 	)
 	)
@@ -98,7 +106,7 @@ def performance(conn,date=datetime.datetime.today(),cloud_save=False):
 	text=hist_data_today_all_changepercent_less_0[0],
 	textposition = 'outside',
 	marker=dict(
-	color='#31A09D',
+	color='#3CB19E',
 	)
 	)
 	)
@@ -109,7 +117,7 @@ def performance(conn,date=datetime.datetime.today(),cloud_save=False):
 	title=''
 	for key,item in title_desc.items():
 		if round(hist_data_today[1][np.argmax(hist_data_today[0])],1) in [round(x,1) for x in item]:
-			title = u'{}  市场表现{}'.format(date.strftime(u'%Y年%m月%d日'),key)
+			title = u'市场表现{}'.format(key)
 
 	layout_one = dict(font=dict(size=12),title = dict(text=title,x=0.06,y=0.93),
 	        xaxis=go.layout.XAxis(title=u'幅度',ticktext=labels,tickvals=tickvals,tickangle=0,tickfont=dict(size=9)),
@@ -159,7 +167,7 @@ def strong_week_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 	text=data['less_5%'],
 	textposition = 'outside',
 	marker=dict(
-	color='#31A09D',
+	color='#3CB19E',
 	),
 	opacity=0.8,
 	orientation='h'
@@ -174,7 +182,7 @@ def strong_week_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 	text=data['over_5%'],
 	textposition = 'outside',
 	marker=dict(
-	color='#F3361E',
+	color='#E05744',
 	),
 	opacity=0.8,
 	orientation='h'
@@ -187,7 +195,7 @@ def strong_week_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 	tickvals = data.index
 	title_sub1 = u'追涨' if (data.iloc[0]['over_5%'] > data.iloc[0]['less_5%']) else u'杀跌'
 	title_sub2 = u'暴涨' if (np.sum(data['over_5%']) > np.sum(data['less_5%'])) else u'暴跌'
-	title = u'今天({}){}的气氛更浓,纵观近期市场,{}个股总数更多.'.format(date.strftime('%Y%m%d'),title_sub1,title_sub2)
+	title = u'今天{}的气氛更浓,纵观近期市场,{}个股总数更多.'.format(title_sub1,title_sub2)
 
 	layout_two = dict(font=dict(size=12),title = dict(text=title,x=0.055,y=0.93),
 	yaxis=go.layout.YAxis(ticktext=labels,tickvals=tickvals),
@@ -318,13 +326,15 @@ def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
 	trace = go.Table(
 	columnwidth=[20,30,30],
 	header=dict(values=list([u'代码',u'名称',u'所属行业',]),
-	fill = dict(color='#31A09D'),
-	font=dict(size=[30,30,30]),height=45),
+	fill = dict(color='#6C6F70'),
+	font=dict(size=[30,30,30],color='#131D21'),height=45),
 	cells=dict(values=[candidates.code, candidates.name,candidates.industry]
 	,font=dict(size=[30,30,30]),height=45,
-	fill=dict(color='#F3361E')))
+	fill=dict(color='#FEDD66')))
 
-	layout = dict(font=dict(size=13),title=dict(text=u"{}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),x=0.055,y=0.945),margin=dict(l=20,r=20,b=30,t=100),height=len(candidates)*45+220)
+	title = u"此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负"
+
+	layout = dict(font=dict(size=13),margin=dict(l=20,r=20,b=30,t=100),height=len(candidates)*45+220)
 
 	data = [trace]
 
@@ -337,6 +347,7 @@ def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
 	combine_title(str(settings.GRAPH['LEAD_LIMIT'])+'_title.png',file)
+	combine_subline(title,file)
 	draw_underline(file,xy=[(0,110),(1400,110)],width=5)
 	if cloud_save:
 		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['LEAD_LIMIT'])
@@ -387,20 +398,20 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 	trace = go.Table(
 	columnwidth = [12,20,12,20],
 	header=dict(values=list([u'代码',u'名称',u'连板次数',u'所属行业',]),
-	fill = dict(color='#31A09D'),
-	font = dict(size=[30,30,30,30]),height=45),
+	fill = dict(color='#6C6F70'),
+	font = dict(size=[30,30,30,30],color='#131D21'),height=45),
 	cells=dict(values=[limit_up_combined.code, limit_up_combined.name, limit_up_combined.freq, limit_up_combined.industry],
 	fill = dict(color=[limit_up_combined.color]),
-	font = dict(color='black',size=[30,30,30,30]),
+	font = dict(color='#131D21',size=[30,30,30,30]),
 	height=45,))
 
-	title = u"{} 连板统计".format(date.strftime("%Y/%m/%d"))
+	title = u"连板统计"
 
 	for key,item in title_desc.items():
 		if len(limit_up_combined) in key:
-			title = u"{} {}".format(date.strftime("%Y/%m/%d"),item)
+			title = u"{}".format(item)
 
-	layout = dict(font=dict(size=14),title=dict(text=title,x=0.055,y=0.975),margin=dict(l=20,r=20,b=30,t=100),height=len(limit_up_combined)*45+220)
+	layout = dict(font=dict(size=14),margin=dict(l=20,r=20,b=30,t=100),height=len(limit_up_combined)*45+220)
 
 	data = [trace]
 
@@ -413,6 +424,7 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
 	combine_title(str(settings.GRAPH['CONTINUOUS_LIMIT'])+'_title.png',file)
+	combine_subline(title,file)
 	draw_underline(file,xy=[(0,110),(1400,110)],width=5)
 	if cloud_save:
 		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['CONTINUOUS_LIMIT'])
@@ -461,12 +473,12 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	trace = go.Table(
 	columnwidth=[12,20,8],
 	header=dict(values=list([u'日期',u'所属行业',u'涨停个股',]),
-	fill = dict(color='#31A09D'),
-	font=dict(size=[30,30,30]),
+	fill = dict(color='#6C6F70'),
+	font=dict(size=[30,30,30],color='#131D21'),
 	height=45),
 	cells=dict(values=[top_rds.date, top_rds.industry, top_rds.number],
 	fill = dict(color=[top_rds.color]),
-	font = dict(color='black',size=[30,30,30]),
+	font = dict(color='#131D21',size=[30,30,30]),
 	height=45))
 
 	#Top 5 
@@ -478,9 +490,9 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	industry_top.columns = ['number']
 	industry_top.sort_values('number',ascending=False,inplace=True)
 
-	title = u'今天({})最强行业是{}，近一周的连续强势行业{}'.format(date.strftime('%Y/%m/%d'),top_rds.iloc[0]['industry'],industry_top.index.tolist()[0] if industry_top.iloc[0]['number']>2 else u'还没出现,请耐心等待')
+	title = u'今天最强行业是{}，近一周的连续强势行业{}'.format(top_rds.iloc[0]['industry'],industry_top.index.tolist()[0] if industry_top.iloc[0]['number']>2 else u'还没出现,请耐心等待')
 
-	layout = dict(font=dict(size=13),title=dict(text=title,x=0.055,y=0.96),margin=dict(l=20,r=20,b=30,t=100),height=len(top_rds)*45+220)
+	layout = dict(font=dict(size=13),margin=dict(l=20,r=20,b=30,t=100),height=len(top_rds)*45+220)
 
 	data = [trace]
 
@@ -493,6 +505,7 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
 	combine_title(str(settings.GRAPH['STRONG_INDUSTRIES_1'])+'_title.png',file)
+	combine_subline(title,file)
 	draw_underline(file,xy=[(0,110),(1400,110)],width=5)
 	if cloud_save:
 		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['STRONG_INDUSTRIES_1'])
@@ -506,7 +519,8 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 		)
 	)
 
-	layout = dict(font=dict(size=13),title=dict(text=u'{}近期强势行业统计'.format(date.strftime('%Y/%m/%d')),x=0.055,y=0.93),showlegend=False)
+	title = u'近期强势行业统计'
+	layout = dict(font=dict(size=13),showlegend=False)
 
 	fig = go.Figure(data=graph, layout=layout)
 	iplot(fig)
@@ -516,6 +530,7 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
 	combine_title(str(settings.GRAPH['STRONG_INDUSTRIES_2'])+'_title.png',file)
+	combine_subline(title,file)
 	draw_underline(file,xy=[(0,110),(1400,110)],width=5)
 	if cloud_save:
 		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['STRONG_INDUSTRIES_2'])
@@ -571,14 +586,14 @@ def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 	colors = ['#FBF1D0','#FDE4C5','#FEE2A9','#FDC6A0','#FCA971','#FCA971','#EC9900','#F57E14','#F55F37','#F3501E','#F3361E']
 	top_rds['color'] = top_rds['color'].map(lambda x:colors[x])
 	trace = go.Table(
-	columnwidth=[12,20,8],
+	columnwidth=[30,30,30],
 	header=dict(values=list([u'日期',u'所属概念',u'涨停个股',]),
-	fill = dict(color='#31A09D'),
-	font=dict(size=[30,30,30]),
+	fill = dict(color='#6C6F70'),
+	font=dict(size=[30,30,30],color='#131D21'),
 	height=45),
 	cells=dict(values=[top_rds.date, top_rds.c_name, top_rds.number],
 	fill = dict(color=[top_rds.color]),
-	font = dict(color='black',size=[30,30,30]),
+	font = dict(color='#131D21',size=[30,30,30]),
 	height=45))
 
 	#Top 5 
@@ -590,9 +605,9 @@ def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 	industry_top.columns = ['number']
 	industry_top.sort_values('number',ascending=False,inplace=True)
 
-	title = u'今天({})最强概念是{}，近一周的连续强势概念{}'.format(date.strftime('%Y/%m/%d'),top_rds.iloc[0]['c_name'],industry_top.index.tolist()[0] if industry_top.iloc[0]['number']>2 else u'还没出现,请耐心等待')
+	title = u'今天最强概念是{}，近一周的连续强势概念{}'.format(top_rds.iloc[0]['c_name'],industry_top.index.tolist()[0] if industry_top.iloc[0]['number']>2 else u'还没出现,请耐心等待')
 
-	layout = dict(font=dict(size=13),title=dict(text=title,x=0.055,y=0.96),margin=dict(l=20,r=20,b=30,t=100),height=len(top_rds)*45+220)
+	layout = dict(font=dict(size=13),height=len(top_rds)*45+220)
 
 	data = [trace]
 
@@ -605,6 +620,7 @@ def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
 	combine_title(str(settings.GRAPH['STRONG_INDUSTRIES_3'])+'_title.png',file)
+	combine_subline(title,file)
 	draw_underline(file,xy=[(0,110),(1400,110)],width=5)
 	if cloud_save:
 		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['STRONG_INDUSTRIES_3'])
@@ -618,7 +634,8 @@ def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 		)
 	)
 
-	layout = dict(font=dict(size=13),title = dict(text=u'{}近期强势概念统计'.format(date.strftime('%Y/%m/%d')),x=0.055,y=0.93),showlegend=False)
+	title = u'近期强势概念统计'
+	layout = dict(font=dict(size=13),showlegend=False)
 
 	fig = go.Figure(data=graph, layout=layout)
 	iplot(fig)
@@ -628,6 +645,7 @@ def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
 	combine_title(str(settings.GRAPH['STRONG_INDUSTRIES_4'])+'_title.png',file)
+	combine_subline(title,file)
 	draw_underline(file,xy=[(0,110),(1400,110)],width=5)
 	if cloud_save:
 		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['STRONG_INDUSTRIES_4'])
@@ -673,17 +691,14 @@ def strong_industries_concepts_combine(conn,date=datetime.datetime.today(),cloud
 	trace = go.Table(
 	columnwidth=[20,30,30],
 	header=dict(values=list([u'代码',u'名称',u'所属行业',u'所属概念']),
-	fill = dict(color='#31A09D'),
-	font=dict(size=[30,30,30,30]),height=45),
+	fill = dict(color='#6C6F70'),
+	font=dict(size=[30,30,30,30],color='#131D21'),height=45),
 	cells=dict(values=[strong_stocks.code, strong_stocks.name,strong_stocks.industry,strong_stocks.intersect_concepts_str]
-	,font=dict(size=[30,30,30,20]),height=45,
-	fill=dict(color='#e65a4c')))
+	,font=dict(size=[30,30,30,30]),height=45,
+	fill=dict(color='#fedd66')))
 
-	total_height_ref = 0
-	for x in strong_stocks['intersect_concepts'].values:
-		total_height_ref+=len(x)
-
-	layout = dict(font=dict(size=13),title=dict(text=u"{}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),x=0.055,y=0.94),margin=dict(l=20,r=20,b=30,t=100),height=(total_height_ref)*45+220)
+	title = u"此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负"
+	layout = dict(font=dict(size=13),margin=dict(l=20,r=20,b=30,t=100),height=len(strong_stocks)*45+220)
 
 	data = [trace]
 
@@ -696,6 +711,7 @@ def strong_industries_concepts_combine(conn,date=datetime.datetime.today(),cloud
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
 	combine_title(str(settings.GRAPH['STRONG_COMBINE'])+'_title.png',file)
+	combine_subline(title,file)
 	draw_underline(file,xy=[(0,110),(1400,110)],width=5)
 	if cloud_save:
 		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['STRONG_COMBINE'])
@@ -739,13 +755,14 @@ def strong_industries_concepts_combine_candidates(conn,date=datetime.datetime.to
 	trace = go.Table(
 	columnwidth=[20,30,30],
 	header=dict(values=list([u'代码',u'名称',u'所属行业',u'所属概念',u'涨幅']),
-	fill = dict(color='#31A09D'),
-	font=dict(size=[30,30,30,30,30]),height=45),
+	fill = dict(color='#6C6F70'),
+	font=dict(size=[30,30,30,30,30],color='#131D21'),height=45),
 	cells=dict(values=[strong_stocks.code, strong_stocks.name,strong_stocks.industry,strong_stocks.intersect_concepts,strong_stocks.p_change]
 	,font=dict(size=[20,20,20,18,20]),height=45,
 	fill=dict(color='#83C6C4')))
 
-	layout = dict(font=dict(size=13),title=dict(text=u"强势行业{}<br>强势概念{}".format(','.join(industry_top_5),','.join(concept_top_5)),x=0.055,y=0.98),margin=dict(l=20,r=20,b=30,t=100),height=len(strong_stocks)*45+220)
+	title = u"强势行业{}<br>强势概念{}".format(','.join(industry_top_5),','.join(concept_top_5))
+	layout = dict(font=dict(size=13),margin=dict(l=20,r=20,b=30,t=100),height=len(strong_stocks)*45+220)
 
 	data = [trace]
 
@@ -758,6 +775,7 @@ def strong_industries_concepts_combine_candidates(conn,date=datetime.datetime.to
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
 	combine_title(str(settings.GRAPH['STRONG_COMBINE_CANDIDATE'])+'_title.png',file)
+	combine_subline(title,file)
 	if cloud_save:
 		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['STRONG_COMBINE_CANDIDATE'])
 		bucket.put_object_from_file(file_name,file)
@@ -795,15 +813,16 @@ def break_ma(conn,date=datetime.datetime.today(),cloud_save=False):
 		trace = go.Table(
 		columnwidth=[12,30,30,10],
 		header=dict(values=list([u'代码',u'中文',u'所属行业',u'涨幅']),
-		fill = dict(color='#31A09D'),
-		font=dict(size=[30,30,30,30]),
+		fill = dict(color='#6C6F70'),
+		font=dict(size=[30,30,30,30],color='#131D21'),
 		height=45),
 		cells=dict(values=[bt_df.code, bt_df.name, bt_df.industry,bt_df.p_change_str],
 		font=dict(size=[30,30,30,30]),
 		height=45)
 		)
 
-		layout = dict(font=dict(size=20),title=u"{} 突破图".format(two_days[1].strftime("%Y/%m/%d")),margin=dict(l=20,r=20,b=30,t=100),height=len(bt_df)*45+220)
+		title = u'突破图'
+		layout = dict(font=dict(size=20),margin=dict(l=20,r=20,b=30,t=100),height=len(bt_df)*45+220)
 
 		data = [trace]
 
@@ -816,6 +835,7 @@ def break_ma(conn,date=datetime.datetime.today(),cloud_save=False):
 			os.makedirs(directory)
 		pio.write_image(fig, file,scale=2)
 		combine_title(str(settings.GRAPH['BREAK_THROUGH'])+'_title.png',file)
+		combine_subline(title,file)
 		if cloud_save:
 			file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['BREAK_THROUGH'])
 			bucket.put_object_from_file(file_name,file)
@@ -858,13 +878,14 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 	trace = go.Table(
 	columnwidth=[20,30,30,20],
 	header=dict(values=list([u'代码',u'名称',u'所属行业',u'今日涨幅']),
-	fill = dict(color='#31A09D'),
-	font=dict(size=(30,30,30,30)),height=45),
+	fill = dict(color='#6C6F70'),
+	font=dict(size=(30,30,30,30),color='#131D21'),height=45),
 	cells=dict(values=[continuous_rise_candidate_df.code, continuous_rise_candidate_df.name, continuous_rise_candidate_df.industry,continuous_rise_candidate_df.p_change_str],
-	font=dict(size=[30,30,30,30]),height=45,fill = dict(color='#F3361E'),),
+	font=dict(size=[30,30,30,30]),height=45,fill = dict(color='#FEDD66'),),
 	)
 
-	layout = dict(font=dict(size=13),title=dict(text=u"{}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),x=0.055,y=0.95),margin=dict(l=20,r=20,b=30,t=100),height=len(continuous_rise_candidate_df)*45+220)
+	title = u"此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负"
+	layout = dict(font=dict(size=13),margin=dict(l=20,r=20,b=30,t=100),height=len(continuous_rise_candidate_df)*45+220)
 
 	data = [trace]
 
@@ -877,6 +898,7 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 		os.makedirs(directory)
 	pio.write_image(fig,file,scale=2)
 	combine_title(str(settings.GRAPH['CONTINUOUSE_RISE'])+'_title.png',file)
+	combine_subline(title,file)
 	draw_underline(file,xy=[(0,110),(1400,110)],width=5)
 	if cloud_save:
 		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['CONTINUOUSE_RISE'])
@@ -910,22 +932,22 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 	today_top_bottom = today_top_bottom.merge(all_stocks,on='code',how='left')
 	today_top_bottom['p_change_str'] = today_top_bottom['p_change'].map(lambda x: '{0:.0f}%'.format(x*100))
 
-	today_top_bottom['color'] = today_top_bottom['p_change'].map(lambda x: '#F3361E' if x>0 else '#83C6C4')
+	today_top_bottom['color'] = today_top_bottom['p_change'].map(lambda x: '#E67969' if x>0 else '#87D8CA')
 
 	trace = go.Table(
 	columnwidth=[20,30,30,20],
 	header=dict(values=list([u'代码',u'名称',u'所属行业',u'幅度']),
-	font=dict(size=[30,30,30,30]),
+	font=dict(size=[30,30,30,30],color='#131D21'),
 	height=45,
-	fill = dict(color='#31A09D')
+	fill = dict(color='#6C6F70')
 	),
 	cells=dict(values=[today_top_bottom.code, today_top_bottom.name, today_top_bottom.industry,today_top_bottom.p_change_str],
 	font = dict(size=[30,30,30,30]),height=45,
 	fill=dict(color=[today_top_bottom.color])
 	)
 	)
-
-	layout = dict(font=dict(size=13),title=dict(text=u"{}此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负".format(date.strftime("%Y/%m/%d")),x=0.055,y=0.95),margin=dict(l=20,r=20,b=30,t=100),height=len(today_top_bottom)*45+220)
+	title = u"此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负"
+	layout = dict(font=dict(size=13),margin=dict(l=20,r=20,b=30,t=100),height=len(today_top_bottom)*45+220)
 
 	data = [trace]
 
@@ -938,6 +960,7 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 		os.makedirs(directory)
 	pio.write_image(fig, file,scale=2)
 	combine_title(str(settings.GRAPH['RANKING_1'])+'_title.png',file)
+	combine_subline(title,file)
 	draw_underline(file,xy=[(0,110),(1400,110)],width=5)
 	if cloud_save:
 		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['RANKING_1'])
@@ -980,8 +1003,7 @@ def signal_trend(conn,date=datetime.datetime.today(),cloud_save=False):
 	ttfont = ImageFont.truetype("imgs/SIMHEI.TTF",36)
 	im = Image.open('imgs/s-0{}.jpg'.format(score))
 	draw = ImageDraw.Draw(im)
-	title = u'今天{}赚钱效应{},仓位应{}'.format(date.strftime('%Y/%m/%d'),title_desc[score][0],title_desc[score][1])
-	draw.text((70,60),title,fill=(0,0,0),font=ttfont)
+	title = u'今天赚钱效应{},仓位应{}'.format(title_desc[score][0],title_desc[score][1])
 
 	directory = os.path.join(home,"Documents","cnstocks")
 	file = os.path.join(home,"Documents","cnstocks","{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['GAUGE_1']))
@@ -989,6 +1011,7 @@ def signal_trend(conn,date=datetime.datetime.today(),cloud_save=False):
 		os.makedirs(directory)
 	im.save(file)
 	combine_title(str(settings.GRAPH['GAUGE_1'])+'_title.png',file)
+	combine_subline(title,file)
 	draw_underline(file,xy=[(0,110),(1400,110)],width=5)
 	if cloud_save:
 		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['GAUGE_1'])
@@ -1006,7 +1029,7 @@ def main():
 		strong_industries(conn,date,True)
 		strong_concepts(conn,date,True)
 		strong_week_graph(conn,date,True)
-		##break_ma(conn,date)
+		#break_ma(conn,date)
 		continuous_rise_stocks(conn,date,True)
 		top_rise_down(conn,date,True)
 		ceil_first(conn,date,True)
