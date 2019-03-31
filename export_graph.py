@@ -392,7 +392,7 @@ def continuous_limit_up_stocks(conn,date=datetime.datetime.today(),cloud_save=Fa
 	limit_up_combined.columns = ['code','freq','name','industry']
 
 	colors = cl.scales['9']['seq']['YlOrRd']
-	colors = ['#FCD770','#FDC600','#EC9833','#E87A49','#F57A3D','#E67969','#D86155','#E05744']
+	colors = ['#FFF4CC','#FCD770','#FDC600','#EC9833','#E87A49','#F57A3D','#E67969','#D86155','#E05744']
 	limit_up_combined['color'] = limit_up_combined['freq'].map(lambda x: colors[x-2] if (x-2)<5 else colors[4])
 
 	trace = go.Table(
@@ -468,7 +468,7 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 	top_rds = top_rds[:(5*3)] # Five days records
 	colors = cl.scales['5']['seq']['YlOrRd']
 	top_rds['color'] = LabelEncoder().fit_transform(top_rds['date'])
-	colors = ['#FEDD66','#FFB776','#EA935F','#E67969','#E05744']
+	colors = ['#FFF4CC','#FEDD66','#FDC600','#FFB776','#EA935F','#EC9A8F','#E67969','#E05744']
 	top_rds['color'] = top_rds['color'].map(lambda x:colors[x])
 	trace = go.Table(
 	columnwidth=[12,20,8],
@@ -583,7 +583,7 @@ def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 	top_rds = top_rds[:(5*3)] # Five days records
 	colors = cl.scales['5']['seq']['YlOrRd']
 	top_rds['color'] = LabelEncoder().fit_transform(top_rds['date'])
-	colors = ['#FEDD66','#FFB776','#EA935F','#E67969','#E05744']
+	colors = ['#FFF4CC','#FEDD66','#FDC600','#FFB776','#EA935F','#EC9A8F','#E67969','#E05744']
 	top_rds['color'] = top_rds['color'].map(lambda x:colors[x])
 	trace = go.Table(
 	columnwidth=[30,30,30],
@@ -607,7 +607,7 @@ def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	title = u'今天最强概念是{}，近一周的连续强势概念{}'.format(top_rds.iloc[0]['c_name'],industry_top.index.tolist()[0] if industry_top.iloc[0]['number']>2 else u'还没出现,请耐心等待')
 
-	layout = dict(font=dict(size=13),height=len(top_rds)*45+220)
+	layout = dict(font=dict(size=13),margin=dict(l=20,r=20,b=30,t=100),height=len(top_rds)*45+220)
 
 	data = [trace]
 
