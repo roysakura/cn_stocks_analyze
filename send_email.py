@@ -40,7 +40,7 @@ def mark_date(date,template,dest_file):
     ttfont = ImageFont.truetype("imgs/SIMHEI.TTF",36)
     im = Image.open(template)
     draw = ImageDraw.Draw(im)
-    draw.text((570,425),date.strftime(u'%Y年%m月%d日'),fill=(19,29,33),font=ttfont)
+    draw.text((570,425),date.strftime(u'%Y年%m月%d日'),fill=(0,0,0),font=ttfont)
     im.save(dest_file)
 
 def send(date=datetime.datetime.today()):
