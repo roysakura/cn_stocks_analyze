@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python
 # encoding: utf-8
 """
@@ -25,6 +26,8 @@ import sys
 from PIL import Image
 from wm import watermark
 
+from PIL import Image,ImageDraw,ImageFont
+
 
 endpoint = 'http://oss-cn-shenzhen.aliyuncs.com' # Suppose that your bucket is in the Hangzhou region.
 image_domain ="http://news-material.oss-cn-shenzhen.aliyuncs.com/"
@@ -32,6 +35,13 @@ auth = oss2.Auth(settings.OSS2_USER, settings.OSS2_PASS)
 bucket = oss2.Bucket(auth, endpoint, 'cnstock')
 home = expanduser("~")
 COMMASPACE = ', '
+
+def mark_date(date,template,dest_file):
+    ttfont = ImageFont.truetype("imgs/SIMHEI.TTF",36)
+    im = Image.open(template)
+    draw = ImageDraw.Draw(im)
+    draw.text((570,425),date.strftime(u'%Y年%m月%d日'),fill=(19,29,33),font=ttfont)
+    im.save(dest_file)
 
 def send(date=datetime.datetime.today()):
     today = date.strftime('%Y%m%d')
@@ -47,8 +57,11 @@ def send(date=datetime.datetime.today()):
     outer['From'] = sender
     outer.preamble = 'You will not see this in a MIME-aware mail reader.\n'
 
+    head_file = os.path.join(home,"Documents","{}_head.png".format(today))
+    dest_file = open(head_file, 'w')
+    mark_date(date,settings.IMGTEMPLATE['HEAD'],head_file)
     # List of attachments
-    attachments = [settings.IMGTEMPLATE['HEAD'],
+    attachments = [head_file,
                     settings.IMGTEMPLATE['BANNER_MARKET'],
                     settings.GRAPH['PERFORMANCE_1'],
                     settings.GRAPH['PERFORMANCE_2'],
@@ -57,7 +70,6 @@ def send(date=datetime.datetime.today()):
                     settings.GRAPH['STRONG_INDUSTRIES_2'],
                     settings.GRAPH['STRONG_INDUSTRIES_3'],
                     settings.GRAPH['STRONG_INDUSTRIES_4'],
-                    settings.GRAPH['STRONG_COMBINE'],
                     settings.IMGTEMPLATE['BANNER_INDI'],
                     settings.GRAPH['LEAD_LIMIT'],
                     settings.GRAPH['RANKING_1'],
