@@ -514,8 +514,8 @@ def strong_industries(conn,date=datetime.datetime.today(),cloud_save=False):
 
 	graph = []
 	graph.append(
-	go.Pie(labels=industry_top.index.tolist(),values=industry_top.number,textfont=dict(size=20),pull=.2,hole=.1,
-		text=industry_top.index.tolist(),textposition="inside",marker=dict(colors=['#f3361e','#f3501e','#f55f37','#f57e14','#ec9900','#fca971','#fdc6a0','#fee2a9','#fbf1d0','#fde4c5'])
+	go.Pie(labels=industry_top.index.tolist(),values=industry_top.number,textfont=dict(size=20),pull=.1,hole=.1,
+		text=industry_top.index.tolist(),textposition="inside",marker=dict(colors=['#E05744', '#E67969', '#EC9A8F', '#EA935F', '#FFB776', '#FDC600', '#fedd66', '#fff4cc', '#3cb29e', '#87d8ca', '#c3ebe4'])
 		)
 	)
 
@@ -630,7 +630,7 @@ def strong_concepts(conn,date=datetime.datetime.today(),cloud_save=False):
 	graph = []
 	graph.append(
 	go.Pie(labels=industry_top.index.tolist(),values=industry_top.number,textfont=dict(size=20),pull=.1,hole=.1,
-		text=industry_top.index.tolist(),textposition="inside",marker=dict(colors=['#f3361e','#f3501e','#f55f37','#f57e14','#ec9900','#fca971','#fdc6a0','#fee2a9','#fbf1d0','#fde4c5'])
+		text=industry_top.index.tolist(),textposition="inside",marker=dict(colors=['#E05744', '#E67969', '#EC9A8F', '#EA935F', '#FFB776', '#FDC600', '#fedd66', '#fff4cc', '#3cb29e', '#87d8ca', '#c3ebe4'])
 		)
 	)
 

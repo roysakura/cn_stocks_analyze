@@ -37,10 +37,10 @@ home = expanduser("~")
 COMMASPACE = ', '
 
 def mark_date(date,template,dest_file):
-    ttfont = ImageFont.truetype("imgs/SIMHEI.TTF",36)
+    ttfont = ImageFont.truetype("imgs/pingfang.ttf",38)
     im = Image.open(template)
     draw = ImageDraw.Draw(im)
-    draw.text((570,425),date.strftime(u'%Y年%m月%d日'),fill=(0,0,0),font=ttfont)
+    draw.text((558,405),date.strftime(u'%Y年%m月%d日'),fill=(39,65,84),font=ttfont)
     im.save(dest_file)
 
 def send(date=datetime.datetime.today()):
