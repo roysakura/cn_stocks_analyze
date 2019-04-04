@@ -60,7 +60,7 @@ def get_dayrange(startfrom,num=5):
 
 	return d_range
 
-def draw_underline(file,xy,fill=(0,0,0),width=0):
+def draw_underline(file,xy,fill=(39,65,84),width=0):
 	im = Image.open(file)
 	draw = ImageDraw.Draw(im)
 	draw.line(xy,fill=fill,width=width)
@@ -329,7 +329,7 @@ def ceil_first(conn,date=datetime.datetime.today(),cloud_save=False):
 	fill = dict(color='#6C6F70'),
 	font=dict(size=[30,30,30],color='#131D21'),height=45),
 	cells=dict(values=[candidates.code, candidates.name,candidates.industry]
-	,font=dict(size=[30,30,30]),height=45,
+	,font=dict(size=[30,30,30],color='#131D21'),height=45,
 	fill=dict(color='#FEDD66')))
 
 	title = u"此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负"
@@ -694,7 +694,7 @@ def strong_industries_concepts_combine(conn,date=datetime.datetime.today(),cloud
 	fill = dict(color='#6C6F70'),
 	font=dict(size=[30,30,30,30],color='#131D21'),height=45),
 	cells=dict(values=[strong_stocks.code, strong_stocks.name,strong_stocks.industry,strong_stocks.intersect_concepts_str]
-	,font=dict(size=[30,30,30,30]),height=45,
+	,font=dict(size=[30,30,30,30],color='#131D21'),height=45,
 	fill=dict(color='#fedd66')))
 
 	title = u"此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负"
@@ -758,7 +758,7 @@ def strong_industries_concepts_combine_candidates(conn,date=datetime.datetime.to
 	fill = dict(color='#6C6F70'),
 	font=dict(size=[30,30,30,30,30],color='#131D21'),height=45),
 	cells=dict(values=[strong_stocks.code, strong_stocks.name,strong_stocks.industry,strong_stocks.intersect_concepts,strong_stocks.p_change]
-	,font=dict(size=[20,20,20,18,20]),height=45,
+	,font=dict(size=[20,20,20,18,20],color='#131D21'),height=45,
 	fill=dict(color='#83C6C4')))
 
 	title = u"强势行业{}<br>强势概念{}".format(','.join(industry_top_5),','.join(concept_top_5))
@@ -817,7 +817,7 @@ def break_ma(conn,date=datetime.datetime.today(),cloud_save=False):
 		font=dict(size=[30,30,30,30],color='#131D21'),
 		height=45),
 		cells=dict(values=[bt_df.code, bt_df.name, bt_df.industry,bt_df.p_change_str],
-		font=dict(size=[30,30,30,30]),
+		font=dict(size=[30,30,30,30],color='#131D21'),
 		height=45)
 		)
 
@@ -881,7 +881,7 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 	fill = dict(color='#6C6F70'),
 	font=dict(size=(30,30,30,30),color='#131D21'),height=45),
 	cells=dict(values=[continuous_rise_candidate_df.code, continuous_rise_candidate_df.name, continuous_rise_candidate_df.industry,continuous_rise_candidate_df.p_change_str],
-	font=dict(size=[30,30,30,30]),height=45,fill = dict(color='#FEDD66'),),
+	font=dict(size=[30,30,30,30],color='#131D21'),height=45,fill = dict(color='#FEDD66'),),
 	)
 
 	title = u"此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负"
@@ -942,7 +942,7 @@ def top_rise_down(conn,date=datetime.datetime.today(),cloud_save=False):
 	fill = dict(color='#6C6F70')
 	),
 	cells=dict(values=[today_top_bottom.code, today_top_bottom.name, today_top_bottom.industry,today_top_bottom.p_change_str],
-	font = dict(size=[30,30,30,30]),height=45,
+	font = dict(size=[30,30,30,30],color='#131D21'),height=45,
 	fill=dict(color=[today_top_bottom.color])
 	)
 	)

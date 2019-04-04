@@ -41,3 +41,8 @@ IMGTEMPLATE = {
 	'BANNER_INDI':'imgs/banner_individual.png',
 	'FOOTER':'imgs/footer.png',
 }
+
+SEND_USERS = {
+	'ROY':{'email':'110672023@qq.com','qrcode':'imgs/qrcode/duoduo.png'},
+	'LIMINGCONG':{'email':'150096055@qq.com','qrcode':'imgs/qrcode/limingcong.png'}
+}
