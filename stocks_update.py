@@ -273,6 +273,7 @@ def post_data_process():
 			df_combine['l_open'] = df_combine['open'].shift(1)
 			df_combine['l_high'] = df_combine['high'].shift(1)
 			df_combine['l_low'] = df_combine['low'].shift(1)
+			df_combine['volume_ratio'] = np.around(df_combine['volume']/(df_combine['volume'].rolling(5).mean()),decimals=2)
 			df_combine['price_change'] = np.around((df_combine['close'] - df_combine['l_close']),decimals=2)
 			df_combine['islimit'] = df_combine.apply(lambda x: 1 if (x['volume']>0 and x['l_close']>0 and x['close']>=np.around((x['l_close']*1.1),decimals=2)) else (-1 if (x['volume']>0 and x['l_close']>0 and x['close']<=np.around((x['l_close']*0.9),decimals=2)) else 0),axis=1)
 			df_combine['ma5'] = df_combine['ma5'].fillna(df_combine['close'].rolling(5).mean())
@@ -411,7 +412,7 @@ def clean_up_today(date=datetime.datetime.today()):
 def main():
     print('Updating today data...\n')
     update_data_base_fast()
-    post_data_process()
-    #update_concepts()
+    #post_data_process()
+    update_concepts()
 if __name__ == '__main__':
     main()
