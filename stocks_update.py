@@ -313,7 +313,13 @@ def post_data_process():
 			df_combine.to_sql(code,conn,if_exists='replace',index=False)
 
 		except Exception as e:
-			print(e)
+			ten_years_before = (today-timedelta(days=3650)).strftime("%Y%m%d")
+			stock = ts.get_hist_data(code,ten_years_before,today_str)
+			try:
+				stock.to_sql(code,conn,if_exists='replace',index=False)
+			except Exception as ee:
+				print('ee->{}'.format(ee))
+			print('e->{}'.format(e))
 			continue
 
 		pbar.update(i + 1)
@@ -412,7 +418,8 @@ def clean_up_today(date=datetime.datetime.today()):
 def main():
     print('Updating today data...\n')
     update_data_base_fast()
-    #post_data_process()
-    update_concepts()
+    post_data_process()
+    #update_concepts()
+    #clean_up_today()
 if __name__ == '__main__':
     main()
