@@ -44,8 +44,8 @@ def main():
 		strong_industries_concepts_combine(conn,today,True)
 		hk_china_money_flow(conn,today,True)
 		send()
-	except:
-		pass
+	except Exception as e:
+		print(e)
 
 	conn.close()
 
