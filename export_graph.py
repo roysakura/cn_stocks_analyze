@@ -259,16 +259,16 @@ def hk_china_money_flow(conn,date=datetime.datetime.today(),cloud_save=False):
 	tickvals = mls.index
 	title_sub='没有强弱资金交换'
 
-	if (mls.iloc[0]['north_money']>0)&((abs(mls.iloc[0]['north_money']) > abs(mls.iloc[0]['south_money']))):
+	if (mls.iloc[-1]['north_money']>0)&((abs(mls.iloc[-1]['north_money']) > abs(mls.iloc[-1]['south_money']))):
 		title_sub = u'北上买入资金较多' 
-	elif (mls.iloc[0]['south_money']>0)&((abs(mls.iloc[0]['south_money']) > abs(mls.iloc[0]['north_money']))):
+	elif (mls.iloc[-1]['south_money']>0)&((abs(mls.iloc[-1]['south_money']) > abs(mls.iloc[-1]['north_money']))):
 		title_sub = u'南下买入资金较多'
-	elif (mls.iloc[0]['north_money']<0)&((abs(mls.iloc[0]['north_money']) > abs(mls.iloc[0]['south_money']))):
+	elif (mls.iloc[-1]['north_money']<0)&((abs(mls.iloc[-1]['north_money']) > abs(mls.iloc[-1]['south_money']))):
 		title_sub = u'北上卖出资金较多'
-	elif (mls.iloc[0]['south_money']<0)&((abs(mls.iloc[0]['south_money']) > abs(mls.iloc[0]['north_money']))):
+	elif (mls.iloc[-1]['south_money']<0)&((abs(mls.iloc[-1]['south_money']) > abs(mls.iloc[-1]['north_money']))):
 		title_sub = u'南下卖出资金较多'
 
-	title = u'{}{}'.format(mls.iloc[0].trade_date.strftime(u"%m月%d日"),title_sub)
+	title = u'{}{}'.format(mls.iloc[-1].trade_date.strftime(u"%m月%d日"),title_sub)
 
 	layout_two = dict(font=dict(size=12),title = dict(text=title,x=0.055,y=0.93),
 	yaxis=go.layout.YAxis(ticktext=labels,tickvals=tickvals),
