@@ -75,6 +75,7 @@ def send(date=datetime.datetime.today()):
                         settings.IMGTEMPLATE['BANNER_MARKET'],
                         settings.GRAPH['PERFORMANCE_1'],
                         settings.GRAPH['PERFORMANCE_2'],
+                        settings.GRAPH['MONEY_FLOW'],
                         settings.IMGTEMPLATE['BANNER_INDUST'],
                         settings.GRAPH['STRONG_INDUSTRIES_1'],
                         settings.GRAPH['STRONG_INDUSTRIES_2'],
