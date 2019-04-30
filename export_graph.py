@@ -214,6 +214,80 @@ def strong_week_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['PERFORMANCE_2'])
 		bucket.put_object_from_file(file_name,file)
 
+
+def hk_china_money_flow(conn,date=datetime.datetime.today(),cloud_save=False):
+	daterange = get_dayrange(startfrom=date,num=10)
+	mls =pd.read_sql('select trade_date,north_money,south_money from money_flow_hsgt where trade_date<=\'{}\' and trade_date>=\'{}\''.format(daterange[0].strftime('%Y%m%d'),daterange[-1].strftime('%Y%m%d')),conn)
+	
+	mls['trade_date'] = pd.to_datetime(mls['trade_date'])
+	mls.sort_values('trade_date',ascending=True,inplace=True)
+	mls = mls.reset_index()
+
+	graph_two = []
+
+	graph_two.append(
+	go.Bar(
+	y=mls.index,
+	x=np.around(mls['south_money'],0),
+	name=u'南下资金',
+	text=np.around(mls['south_money'],0),
+	textposition = 'outside',
+	marker=dict(
+	color='#3CB19E',
+	),
+	opacity=0.8,
+	orientation='h'
+	)
+	)
+
+	graph_two.append(
+	go.Bar(
+	y=mls.index,
+	x=np.around(mls['north_money'],0),
+	name=u'北上资金',
+	text=np.around(mls['north_money'],0),
+	textposition = 'outside',
+	marker=dict(
+	color='#E05744',
+	),
+	opacity=0.8,
+	orientation='h'
+	)
+	)
+
+	labels = [d for d in mls['trade_date']]
+	tickvals = mls.index
+	title_sub='没有强弱资金交换'
+
+	if (mls.iloc[0]['north_money']>0)&((abs(mls.iloc[0]['north_money']) > abs(mls.iloc[0]['south_money']))):
+		title_sub = u'北上买入资金较多' 
+	elif (mls.iloc[0]['south_money']>0)&((abs(mls.iloc[0]['south_money']) > abs(mls.iloc[0]['north_money']))):
+		title_sub = u'南下买入资金较多'
+	elif (mls.iloc[0]['north_money']<0)&((abs(mls.iloc[0]['north_money']) > abs(mls.iloc[0]['south_money']))):
+		title_sub = u'北上卖出资金较多'
+	elif (mls.iloc[0]['south_money']<0)&((abs(mls.iloc[0]['south_money']) > abs(mls.iloc[0]['north_money']))):
+		title_sub = u'南下卖出资金较多'
+
+	title = u'今天{}'.format(title_sub)
+
+	layout_two = dict(font=dict(size=12),title = dict(text=title,x=0.055,y=0.93),
+	yaxis=go.layout.YAxis(ticktext=labels,tickvals=tickvals),
+	xaxis = dict(title = u'资金'),
+	)
+	fig = go.Figure(data=graph_two, layout=layout_two)
+	iplot(fig)
+	directory = os.path.join(home,"Documents","cnstocks")
+	file = os.path.join(home,"Documents","cnstocks","{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['MONEY_FLOW']))
+	if not os.path.exists(directory):
+		os.makedirs(directory)
+	pio.write_image(fig, file, scale=2)
+	combine_title(str(settings.GRAPH['MONEY_FLOW'])+'_title.png',file)
+	draw_underline(file,xy=[(0,110),(1400,110)],width=5)
+	if cloud_save:
+		file_name = "{}_{}.jpg".format(date.strftime('%Y%m%d'),settings.GRAPH['MONEY_FLOW'])
+		bucket.put_object_from_file(file_name,file)
+
+
 def top_break_graph(conn,date=datetime.datetime.today(),cloud_save=False):
 	stocks_60 = pd.read_sql('select * from stocks_60_days ORDER BY date',conn)
 	top_break_through = {}
@@ -1036,6 +1110,7 @@ def main():
 		signal_trend(conn,date,True)
 		strong_industries_concepts_combine(conn,date,True)
 		strong_industries_concepts_combine_candidates(conn,date,True)
+		hk_china_money_flow(conn,date,True)
 	else:
 		#performance(conn)
 		#continuous_limit_up_stocks(conn)
