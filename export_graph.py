@@ -223,8 +223,6 @@ def hk_china_money_flow(conn,date=datetime.datetime.today(),cloud_save=False):
 	mls.sort_values('trade_date',ascending=True,inplace=True)
 	mls = mls.reset_index()
 
-	print(mls)
-
 	graph_two = []
 
 	graph_two.append(
@@ -1100,18 +1098,18 @@ def main():
 		date = sys.argv[1:]
 		date = datetime.datetime.strptime(date[0], '%Y-%m-%d')
 		print('Exporting Graph For Date {}...\n'.format(date))
-		#performance(conn,date,True)
-		#continuous_limit_up_stocks(conn,date,True)
-		#strong_industries(conn,date,True)
-		#strong_concepts(conn,date,True)
-		#strong_week_graph(conn,date,True)
-		##break_ma(conn,date)
-		#continuous_rise_stocks(conn,date,True)
-		#top_rise_down(conn,date,True)
-		#ceil_first(conn,date,True)
-		#signal_trend(conn,date,True)
-		#strong_industries_concepts_combine(conn,date,True)
-		#strong_industries_concepts_combine_candidates(conn,date,True)
+		performance(conn,date,True)
+		continuous_limit_up_stocks(conn,date,True)
+		strong_industries(conn,date,True)
+		strong_concepts(conn,date,True)
+		strong_week_graph(conn,date,True)
+		#break_ma(conn,date)
+		continuous_rise_stocks(conn,date,True)
+		top_rise_down(conn,date,True)
+		ceil_first(conn,date,True)
+		signal_trend(conn,date,True)
+		strong_industries_concepts_combine(conn,date,True)
+		strong_industries_concepts_combine_candidates(conn,date,True)
 		hk_china_money_flow(conn,date,True)
 	else:
 		#performance(conn)
