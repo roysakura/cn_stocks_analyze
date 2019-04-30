@@ -42,7 +42,7 @@ def main():
 		top_rise_down(conn,today,True)
 		signal_trend(conn,today,True)
 		strong_industries_concepts_combine(conn,today,True)
-
+		hk_china_money_flow(conn,today,True)
 		send()
 	except:
 		pass
