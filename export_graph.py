@@ -268,7 +268,7 @@ def hk_china_money_flow(conn,date=datetime.datetime.today(),cloud_save=False):
 	elif (mls.iloc[0]['south_money']<0)&((abs(mls.iloc[0]['south_money']) > abs(mls.iloc[0]['north_money']))):
 		title_sub = u'南下卖出资金较多'
 
-	title = u'今天{}'.format(title_sub)
+	title = u'{}{}'.format(mls.iloc[0].trade_date.strftime(u"%m月%d日"),title_sub)
 
 	layout_two = dict(font=dict(size=12),title = dict(text=title,x=0.055,y=0.93),
 	yaxis=go.layout.YAxis(ticktext=labels,tickvals=tickvals),
