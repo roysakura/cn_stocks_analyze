@@ -124,7 +124,7 @@ def update_data_base_fast():
 	trade_date = cal[cal.is_open==1]['cal_date']
 
 	## HK Mainland Money Flow
-	mf = pro.moneyflow_hsgt(start_date=one_year_before_str, end_date=today_str)
+	mf = pro.moneyflow_hsgt(start_date=one_year_before_str, end_date=today.strftime("%Y%m%d"))
 	mf.reset_index().to_sql('money_flow_hsgt',conn,if_exists='replace',index=False)
 
 	## Start do updating
@@ -193,7 +193,7 @@ def update_data_base_fast_simple():
 	trade_date = cal[cal.is_open==1]['cal_date']
 
 	## HK Mainland Money Flow
-	mf = pro.moneyflow_hsgt(start_date=one_year_before_str, end_date=today_str)
+	mf = pro.moneyflow_hsgt(start_date=one_year_before_str, end_date=today.strftime("%Y%m%d"))
 	mf.reset_index().to_sql('money_flow_hsgt',conn,if_exists='replace',index=False)
 	
 	## Start do updating
