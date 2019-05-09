@@ -940,7 +940,7 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 	continuous_rise_candidate_df = None
 	trace = None
 	title = None
-	if len(continuous_rise>0):
+	if len(continuous_rise)>0:
 		continuous_rise_candidate_df = pd.DataFrame.from_dict(continuous_rise,orient='index')
 		continuous_rise_candidate_df.columns = ['accumulate']
 		continuous_rise_candidate_df = continuous_rise_candidate_df.sort_values('accumulate',ascending=False).reset_index()
