@@ -937,28 +937,39 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 		if (accumulate_change>=0.2) and (accumulate_change<=0.4) and (g.iloc[0:10]['p_change']>0).sum()>=8:
 			continuous_rise[n] = round(accumulate_change*100,2) 
 
+	continuous_rise_candidate_df = None
+	trace = None
+	title = None
+	if len(continuous_rise>0):
+		continuous_rise_candidate_df = pd.DataFrame.from_dict(continuous_rise,orient='index')
+		continuous_rise_candidate_df.columns = ['accumulate']
+		continuous_rise_candidate_df = continuous_rise_candidate_df.sort_values('accumulate',ascending=False).reset_index()
+		continuous_rise_candidate_df.columns = ['code','accumulate']
+		continuous_rise_candidate_df = continuous_rise_candidate_df.merge(stocks_60[stocks_60.date==daterange[0]],on='code',how='left')
+		continuous_rise_candidate_df['accumulate'] = continuous_rise_candidate_df['accumulate'].map(lambda x: '{}%'.format(x))
+		continuous_rise_candidate_df['p_change_str'] = continuous_rise_candidate_df['p_change'].map(lambda x: '{}%'.format(round(x,2)))
+		continuous_rise_candidate_df = continuous_rise_candidate_df.merge(all_stocks,on='code',how='left')
+		continuous_rise_candidate_df = continuous_rise_candidate_df.head(10)
+		#continuous_rise_candidate_df['color'] = continuous_rise_candidate_df['p_change'].map(lambda x: '#ff5a57' if x>0 else '#54ff68')
 
-	continuous_rise_candidate_df = pd.DataFrame.from_dict(continuous_rise,orient='index')
-	continuous_rise_candidate_df.columns = ['accumulate']
-	continuous_rise_candidate_df = continuous_rise_candidate_df.sort_values('accumulate',ascending=False).reset_index()
-	continuous_rise_candidate_df.columns = ['code','accumulate']
-	continuous_rise_candidate_df = continuous_rise_candidate_df.merge(stocks_60[stocks_60.date==daterange[0]],on='code',how='left')
-	continuous_rise_candidate_df['accumulate'] = continuous_rise_candidate_df['accumulate'].map(lambda x: '{}%'.format(x))
-	continuous_rise_candidate_df['p_change_str'] = continuous_rise_candidate_df['p_change'].map(lambda x: '{}%'.format(round(x,2)))
-	continuous_rise_candidate_df = continuous_rise_candidate_df.merge(all_stocks,on='code',how='left')
-	continuous_rise_candidate_df = continuous_rise_candidate_df.head(10)
-	#continuous_rise_candidate_df['color'] = continuous_rise_candidate_df['p_change'].map(lambda x: '#ff5a57' if x>0 else '#54ff68')
-
-	trace = go.Table(
-	columnwidth=[20,30,30,20],
-	header=dict(values=list([u'代码',u'名称',u'所属行业',u'今日涨幅']),
-	fill = dict(color='#6C6F70'),
-	font=dict(size=(30,30,30,30),color='#131D21'),height=45),
-	cells=dict(values=[continuous_rise_candidate_df.code, continuous_rise_candidate_df.name, continuous_rise_candidate_df.industry,continuous_rise_candidate_df.p_change_str],
-	font=dict(size=[30,30,30,30],color='#131D21'),height=45,fill = dict(color='#FEDD66'),),
-	)
-
-	title = u"此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负"
+		trace = go.Table(
+		columnwidth=[20,30,30,20],
+		header=dict(values=list([u'代码',u'名称',u'所属行业',u'今日涨幅']),
+		fill = dict(color='#6C6F70'),
+		font=dict(size=(30,30,30,30),color='#131D21'),height=45),
+		cells=dict(values=[continuous_rise_candidate_df.code, continuous_rise_candidate_df.name, continuous_rise_candidate_df.industry,continuous_rise_candidate_df.p_change_str],
+		font=dict(size=[30,30,30,30],color='#131D21'),height=45,fill = dict(color='#FEDD66'),),
+		)
+		title = u"此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负"
+	else:
+		trace = go.Table(
+		columnwidth=[20,30,30,20],
+		header=dict(values=list([u'代码',u'名称',u'所属行业',u'今日涨幅']),
+		fill = dict(color='#6C6F70'),
+		font=dict(size=(30,30,30,30),color='#131D21'),height=45),
+		)
+		title = u"本日没有结果"
+	
 	layout = dict(font=dict(size=13),margin=dict(l=20,r=20,b=30,t=100),height=len(continuous_rise_candidate_df)*45+220)
 
 	data = [trace]
