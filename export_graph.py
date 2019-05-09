@@ -940,6 +940,7 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 	continuous_rise_candidate_df = None
 	trace = None
 	title = None
+	layout = None
 	if continuous_rise:
 		continuous_rise_candidate_df = pd.DataFrame.from_dict(continuous_rise,orient='index')
 		continuous_rise_candidate_df.columns = ['accumulate']
@@ -961,6 +962,8 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 		font=dict(size=[30,30,30,30],color='#131D21'),height=45,fill = dict(color='#FEDD66'),),
 		)
 		title = u"此表格个股数据来源市场,只为传达更多信息,非荐股,后果自负"
+		layout = dict(font=dict(size=13),margin=dict(l=20,r=20,b=30,t=100),height=len(continuous_rise_candidate_df)*45+220)
+
 	else:
 		trace = go.Table(
 		columnwidth=[20,30,30,20],
@@ -969,8 +972,8 @@ def continuous_rise_stocks(conn,date=datetime.datetime.today(),cloud_save=False)
 		font=dict(size=(30,30,30,30),color='#131D21'),height=45),
 		)
 		title = u"本日没有结果"
-	
-	layout = dict(font=dict(size=13),margin=dict(l=20,r=20,b=30,t=100),height=len(continuous_rise_candidate_df)*45+220)
+		layout = dict(font=dict(size=13),margin=dict(l=20,r=20,b=30,t=100),height=100)
+
 
 	data = [trace]
 
