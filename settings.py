@@ -44,6 +44,44 @@ IMGTEMPLATE = {
 }
 
 SEND_USERS = {
-	'ROY':{'email':'110672023@qq.com','qrcode':'imgs/qrcode/duoduo.png'},
-	'LIMINGCONG':{'email':'150096055@qq.com','qrcode':'imgs/qrcode/limingcong.png'}
+	'ROY':{'email':'110672023@qq.com',
+			'qrcode':'imgs/qrcode/duoduo.png',
+			'attachments' : [
+                        	IMGTEMPLATE['BANNER_MARKET'],
+                        	GRAPH['PERFORMANCE_1'],
+                        	GRAPH['PERFORMANCE_2'],
+                        	GRAPH['MONEY_FLOW'],
+                        	IMGTEMPLATE['BANNER_INDUST'],
+                        	GRAPH['STRONG_INDUSTRIES_1'],
+                        	GRAPH['STRONG_INDUSTRIES_2'],
+                        	GRAPH['STRONG_INDUSTRIES_3'],
+                        	GRAPH['STRONG_INDUSTRIES_4'],
+                        	IMGTEMPLATE['BANNER_INDI'],
+                        	GRAPH['LEAD_LIMIT'],
+                        	GRAPH['RANKING_1'],
+                        	GRAPH['CONTINUOUSE_RISE'],
+                        	GRAPH['CONTINUOUS_LIMIT'],
+                        	GRAPH['GAUGE_1']
+                        	]
+             },
+
+	'LIMINGCONG':{'email':'150096055@qq.com',
+					'qrcode':'imgs/qrcode/limingcong.png',
+					'attachments' : [
+                        	IMGTEMPLATE['BANNER_MARKET'],
+                        	GRAPH['PERFORMANCE_1'],
+                        	GRAPH['PERFORMANCE_2'],
+                        	IMGTEMPLATE['BANNER_INDUST'],
+                        	GRAPH['STRONG_INDUSTRIES_1'],
+                        	GRAPH['STRONG_INDUSTRIES_2'],
+                        	GRAPH['STRONG_INDUSTRIES_3'],
+                        	GRAPH['STRONG_INDUSTRIES_4'],
+                        	IMGTEMPLATE['BANNER_INDI'],
+                        	GRAPH['LEAD_LIMIT'],
+                        	GRAPH['RANKING_1'],
+                        	GRAPH['CONTINUOUSE_RISE'],
+                        	GRAPH['CONTINUOUS_LIMIT'],
+                        	GRAPH['GAUGE_1']
+                        	]
+                    }
 }
