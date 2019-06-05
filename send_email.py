@@ -71,23 +71,10 @@ def send(date=datetime.datetime.today()):
         dest_file = open(head_file, 'w')
         mark_date(date,settings.IMGTEMPLATE['HEAD'],head_file)
         # List of attachments
-        attachments = [head_file,
-                        settings.IMGTEMPLATE['BANNER_MARKET'],
-                        settings.GRAPH['PERFORMANCE_1'],
-                        settings.GRAPH['PERFORMANCE_2'],
-                        settings.GRAPH['MONEY_FLOW'],
-                        settings.IMGTEMPLATE['BANNER_INDUST'],
-                        settings.GRAPH['STRONG_INDUSTRIES_1'],
-                        settings.GRAPH['STRONG_INDUSTRIES_2'],
-                        settings.GRAPH['STRONG_INDUSTRIES_3'],
-                        settings.GRAPH['STRONG_INDUSTRIES_4'],
-                        settings.IMGTEMPLATE['BANNER_INDI'],
-                        settings.GRAPH['LEAD_LIMIT'],
-                        settings.GRAPH['RANKING_1'],
-                        settings.GRAPH['CONTINUOUSE_RISE'],
-                        settings.GRAPH['CONTINUOUS_LIMIT'],
-                        settings.GRAPH['GAUGE_1'],
-                        footer_file]
+        attachments = [head_file]
+        attachments +=user['attachments']
+        attachments.append(footer_file)
+
         combine_files = []
         for i in attachments:
             if type(i)==int:
